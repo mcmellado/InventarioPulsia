@@ -7,12 +7,9 @@
 </head>
 <body class="bg-light">
     <div class="container mt-5">
-        <h1 class="text-primary mb-4">Equipos en puesto: {{ $puesto->nombre }}</h1>
+        <h1 class="text-primary">Equipos en puesto: {{ $puesto->nombre }}</h1>
 
-        {{-- Contador de equipos --}}
-        <div class="mb-3">
-            <strong>Total de equipos: {{ count($equipos) }}</strong>
-        </div>
+        <p class="mb-3"><strong>Total de equipos: {{ count($equipos) }}</strong></p>
 
         @if($equipos->isEmpty())
             <div class="alert alert-warning">No hay equipos en este puesto.</div>
@@ -27,7 +24,6 @@
                     <select name="puesto_destino_id" id="puesto_destino_id" class="form-select w-auto" required>
                         <option value="" disabled selected>Selecciona un puesto</option>
                         @foreach ($puestos as $puestoOption)
-                            {{-- Evitar mostrar el puesto actual --}}
                             @if($puestoOption->id !== $puesto->id)
                                 <option value="{{ $puestoOption->id }}">{{ $puestoOption->nombre }}</option>
                             @endif
@@ -40,8 +36,8 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
                             <tr>
                                 <th><input type="checkbox" id="selectAll"></th>
                                 <th>Número de Serie</th>

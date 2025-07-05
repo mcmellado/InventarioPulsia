@@ -9,7 +9,8 @@
 
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="text-primary">Equipos modelo: {{ $modelo }}</h1>
+            <h1 class="text-primary">Equipos modelo: {{ $modelo }}</h1> 
+
 
             <a href="{{ route('equipos.index') }}" class="btn btn-secondary">Volver a la lista general</a>
 
@@ -18,6 +19,7 @@
                 <button type="submit" class="btn btn-danger">Cerrar sesión</button>
             </form>
         </div>
+        <p class="mb-3"><strong>Total de equipos: {{ count($equipos) }}</strong></p>
 
         @if($equipos->isEmpty())
             <div class="alert alert-warning">No hay equipos registrados para este modelo.</div>
