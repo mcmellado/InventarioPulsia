@@ -8,34 +8,35 @@ use Illuminate\Database\Eloquent\Model;
 class Equipo extends Model
 {
     use HasFactory;
-
-
+    
     protected $fillable = [
         'numero_serie',
         'modelo',
         'puesto_actual_id',
-        'fecha_ingreso'
+        'fecha_ingreso',
     ];
 
-    // RELACION CON EL PUESTO ACTUAL
+    /**
+     * Relación con el puesto actual
+     */
     public function puestoActual()
     {
         return $this->belongsTo(Puesto::class, 'puesto_actual_id');
     }
-    
 
-    // RELACION CON TODOS SUS MOVIMIENTOS
+    /**
+     * Relación con todos los movimientos
+     */
     public function movimientos()
-     {
+    {
         return $this->hasMany(Movimiento::class);
-     }
+    }
 
-
-     public function ultimoMovimiento()
-{
-    return $this->hasOne(\App\Models\Movimiento::class)->latestOfMany();
-}
-
-
-
+    /**
+     * Relación con el último movimiento registrado 
+     */
+    public function ultimoMovimiento()
+    {
+        return $this->hasOne(Movimiento::class)->latestOfMany();
+    }
 }

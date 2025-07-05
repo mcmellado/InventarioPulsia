@@ -58,7 +58,7 @@ class MovimientoController extends Controller
         return view('movimientos.multiple', compact('equipos', 'puestos'));
     }
 
-    // Guardar movimientos múltiples 
+    // Guardar movimientos múltiples
     public function guardarMultiple(Request $request)
     {
         try {
@@ -66,7 +66,8 @@ class MovimientoController extends Controller
                 'equipos' => 'required|array',
                 'equipos.*' => 'exists:equipos,id',
                 'puesto_destino_id' => 'required|exists:puestos,id',
-                'observaciones' => 'nullable|string|max:255',
+                'observaciones' => 'nullable|array',
+                'observaciones.*' => 'nullable|string|max:255',
             ]);
 
             $puestoDestino = Puesto::findOrFail($request->puesto_destino_id);
@@ -79,7 +80,7 @@ class MovimientoController extends Controller
                     'usuario_id' => Auth::id(),
                     'puesto_origen_id' => $equipo->puesto_actual_id,
                     'puesto_destino_id' => $request->puesto_destino_id,
-                    'observaciones' => $request->observaciones ?? '',
+                    'observaciones' => $request->observaciones[$equipoId] ?? '',
                 ]);
 
                 $equipo->update([
