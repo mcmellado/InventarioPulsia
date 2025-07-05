@@ -31,13 +31,12 @@ class MovimientoController extends Controller
 
         Movimiento::create([
             'equipo_id' => $equipo->id,
-            'usuario_id' => Auth::id(), 
+            'usuario_id' => Auth::id(),
             'puesto_origen_id' => $equipo->puesto_actual_id,
             'puesto_destino_id' => $request->puesto_destino_id,
             'observaciones' => $request->observaciones ?? '',
         ]);
 
-        // Actualizar el equipo con el nuevo puesto
         $equipo->update([
             'puesto_actual_id' => $request->puesto_destino_id,
         ]);
@@ -59,31 +58,55 @@ class MovimientoController extends Controller
         return view('movimientos.multiple', compact('equipos', 'puestos'));
     }
 
+    // Guardar movimientos múltiples 
     public function guardarMultiple(Request $request)
     {
-        $request->validate([
-            'equipos' => 'required|array',
-            'equipos.*' => 'exists:equipos,id',
-            'puesto_destino_id' => 'required|exists:puestos,id',
-            'observaciones' => 'nullable|string|max:255',
-        ]);
-
-        foreach ($request->equipos as $equipoId) {
-            $equipo = Equipo::findOrFail($equipoId);
-
-            Movimiento::create([
-                'equipo_id' => $equipo->id,
-                'usuario_id' => Auth::id(),
-                'puesto_origen_id' => $equipo->puesto_actual_id,
-                'puesto_destino_id' => $request->puesto_destino_id,
-                'observaciones' => $request->observaciones ?? '',
+        try {
+            $request->validate([
+                'equipos' => 'required|array',
+                'equipos.*' => 'exists:equipos,id',
+                'puesto_destino_id' => 'required|exists:puestos,id',
+                'observaciones' => 'nullable|string|max:255',
             ]);
 
-            $equipo->update([
-                'puesto_actual_id' => $request->puesto_destino_id,
-            ]);
+            $puestoDestino = Puesto::findOrFail($request->puesto_destino_id);
+
+            foreach ($request->equipos as $equipoId) {
+                $equipo = Equipo::findOrFail($equipoId);
+
+                Movimiento::create([
+                    'equipo_id' => $equipo->id,
+                    'usuario_id' => Auth::id(),
+                    'puesto_origen_id' => $equipo->puesto_actual_id,
+                    'puesto_destino_id' => $request->puesto_destino_id,
+                    'observaciones' => $request->observaciones ?? '',
+                ]);
+
+                $equipo->update([
+                    'puesto_actual_id' => $request->puesto_destino_id,
+                ]);
+            }
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'mensaje' => 'Movimientos múltiples registrados correctamente.',
+                    'puesto_nombre' => $puestoDestino->nombre,
+                ]);
+            }
+
+            return redirect()->route('equipos.index')->with('success', 'Movimientos múltiples registrados correctamente.');
+
+        } catch (\Throwable $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'Ocurrió un error al registrar los movimientos.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->route('equipos.index')->with('error', 'Error al registrar movimientos.');
         }
-
-        return redirect()->route('equipos.index')->with('success', 'Movimientos múltiples registrados correctamente.');
     }
 }

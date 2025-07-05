@@ -14,7 +14,7 @@
         @if($equipos->isEmpty())
             <div class="alert alert-warning">No hay equipos en este puesto.</div>
         @else
-            <form method="POST" action="{{ route('movimientos.guardarMultiple') }}">
+            <form id="formMoverEquipos" method="POST" action="{{ route('movimientos.guardarMultiple') }}">
                 @csrf
 
                 <p>Selecciona uno o varios equipos y elige el puesto destino para moverlos.</p>
@@ -34,6 +34,9 @@
                         Mover seleccionados
                     </button>
                 </div>
+                <div id="alertSuccess" class="alert alert-success d-none" role="alert">
+                    Equipos movidos correctamente.
+                </div>
 
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle">
@@ -47,7 +50,7 @@
                         </thead>
                         <tbody>
                             @foreach($equipos as $equipo)
-                                <tr>
+                                <tr data-id="{{ $equipo->id }}">
                                     <td>
                                         <input type="checkbox" name="equipos[]" value="{{ $equipo->id }}" class="equipo-checkbox">
                                     </td>
@@ -68,26 +71,76 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Seleccionar / Deseleccionar todos
-        document.getElementById('selectAll').addEventListener('change', function () {
-            let checkboxes = document.querySelectorAll('.equipo-checkbox');
+        const form = document.getElementById('formMoverEquipos');
+        const checkboxes = document.querySelectorAll('.equipo-checkbox');
+        const selectPuesto = document.getElementById('puesto_destino_id');
+        const btnMover = document.getElementById('moverSeleccionadosBtn');
+        const selectAll = document.getElementById('selectAll');
+        const alertBox = document.getElementById('alertSuccess');
+
+        function toggleMoverButton() {
+            const anyChecked = [...checkboxes].some(cb => cb.checked);
+            const puestoSelected = selectPuesto.value !== "";
+            btnMover.disabled = !(anyChecked && puestoSelected);
+        }
+
+        selectAll.addEventListener('change', function () {
             checkboxes.forEach(chk => chk.checked = this.checked);
             toggleMoverButton();
         });
 
-        // Habilitar botón si hay al menos un checkbox seleccionado y un puesto elegido
-        const checkboxes = document.querySelectorAll('.equipo-checkbox');
-        const selectPuesto = document.getElementById('puesto_destino_id');
-        const btnMover = document.getElementById('moverSeleccionadosBtn');
+        checkboxes.forEach(chk => chk.addEventListener('change', () => {
+            if (!chk.checked) selectAll.checked = false;
+            toggleMoverButton();
+        }));
 
-        checkboxes.forEach(chk => chk.addEventListener('change', toggleMoverButton));
         selectPuesto.addEventListener('change', toggleMoverButton);
 
-        function toggleMoverButton() {
-            const anyChecked = [...document.querySelectorAll('.equipo-checkbox')].some(cb => cb.checked);
-            const puestoSelected = selectPuesto.value !== "";
-            btnMover.disabled = !(anyChecked && puestoSelected);
-        }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    alert("Error al mover los equipos.");
+                    return;
+                }
+
+                const data = await response.json();
+
+                // Quitar selección y actualizar visualmente
+                checkboxes.forEach(chk => {
+                    if (chk.checked) {
+                        const row = chk.closest('tr');
+                        row.remove(); // Opcional: eliminar fila al mover
+                        chk.checked = false;
+                    }
+                });
+
+                selectAll.checked = false;
+                selectPuesto.value = "";
+                toggleMoverButton();
+
+                // Mostrar alerta
+                alertBox.classList.remove('d-none');
+                setTimeout(() => {
+                    alertBox.classList.add('d-none');
+                }, 3000);
+
+            } catch (error) {
+                console.error(error);
+                alert("Error de red.");
+            }
+        });
     </script>
 </body>
 </html>
