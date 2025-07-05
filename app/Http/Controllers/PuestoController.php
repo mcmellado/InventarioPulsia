@@ -29,4 +29,6 @@ class PuestoController extends Controller
     {
         return $this->hasMany(Equipo::class, 'puesto_actual_id');
     }
+
+
 }

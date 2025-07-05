@@ -63,5 +63,13 @@ Route::middleware('auth')->group(function () {
 // Mostrar formulario para mover un equipo
 Route::get('/equipos/{id}/mover', [MovimientoController::class, 'crear'])->name('movimientos.crear');
 
-// Guardar el movimiento
+// Guardar el movimiento para un solo equipo
 Route::post('/equipos/{id}/mover', [MovimientoController::class, 'guardar'])->name('movimientos.guardar');
+
+// Mostrar formulario para mover múltiples equipos seleccionados
+Route::post('/movimientos/multiple', [MovimientoController::class, 'crearMultiple'])->name('movimientos.multiple');
+
+// Guardar movimientos múltiples
+Route::post('/movimientos/guardar-multiple', [MovimientoController::class, 'guardarMultiple'])->name('movimientos.guardarMultiple');
+
+
