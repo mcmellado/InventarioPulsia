@@ -17,18 +17,14 @@ class PuestoController extends Controller
 
     public function porPuesto($nombre)
     {
-        // Busca el puesto por nombre
-        $puesto = Puesto::where('nombre', $nombre)->firstOrFail();
+            $puesto = Puesto::where('nombre', $nombre)->firstOrFail();
+    $equipos = $puesto->equipos()->with('puestoActual')->get();
+    $puestos = Puesto::all(); // <-- Aquí agregas esta línea
 
-        // Obtiene los equipos asignados a ese puesto
-        $equipos = $puesto->equipos()->with('puestoActual')->get();
-
-        return view('puestos.porPuesto', compact('puesto', 'equipos'));
+    return view('puestos.porPuesto', compact('puesto', 'equipos', 'puestos'));
     }
     public function equipos()
     {
         return $this->hasMany(Equipo::class, 'puesto_actual_id');
     }
-
-
 }

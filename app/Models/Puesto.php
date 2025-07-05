@@ -28,5 +28,7 @@ class Puesto extends Model
     {
         return $this->hasMany(Movimiento::class, 'puesto_destino_id');
     }
+
+    
     
 }
