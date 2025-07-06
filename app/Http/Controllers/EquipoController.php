@@ -89,6 +89,7 @@ class EquipoController extends BaseController
                 ->with('duplicados', $duplicados);
         }
 
-        return redirect()->route('equipos.index')->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
+        return redirect()->back()->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
+
     }
 }

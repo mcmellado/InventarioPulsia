@@ -10,6 +10,23 @@
 <div class="container mt-5">
     <h1 class="mb-4">Añadir varios equipos</h1>
 
+        @if (session('success'))
+    <div id="success-alert" class="alert alert-success">
+        {{ session('success') }}
+    </div>
+
+    <script>
+        setTimeout(function() {
+            const alert = document.getElementById('success-alert');
+            if (alert) {
+                alert.style.display = 'none';
+            }
+        }, 15000); // 15000 ms = 15 segundos
+    </script>
+@endif
+
+
+
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">
