@@ -72,4 +72,10 @@ Route::post('/movimientos/multiple', [MovimientoController::class, 'crearMultipl
 // Guardar movimientos múltiples
 Route::post('/movimientos/guardar-multiple', [MovimientoController::class, 'guardarMultiple'])->name('movimientos.guardarMultiple');
 
+// Guardar observaciones múltiples (sin mover equipos)
+Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
+Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
+
+
+
 

@@ -10,11 +10,17 @@ use Illuminate\Support\Facades\Auth;
 
 class MovimientoController extends Controller
 {
-    // Mostrar formulario para mover un equipo
+    // Mostrar formulario para mover un equipo individualmente
     public function crear($equipoId)
     {
         $equipo = Equipo::findOrFail($equipoId);
         $puestos = Puesto::all();
+
+        // Obtener última observación del equipo
+        $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
+            ->orderByDesc('created_at')
+            ->first();
+        $equipo->ultima_observacion = $ultimoMovimiento ? $ultimoMovimiento->observaciones : '';
 
         return view('movimientos.crear', compact('equipo', 'puestos'));
     }
@@ -55,59 +61,98 @@ class MovimientoController extends Controller
             return redirect()->route('equipos.index')->with('error', 'No seleccionaste ningún equipo.');
         }
 
+        // Añadir última observación a cada equipo
+        foreach ($equipos as $equipo) {
+            $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
+                ->orderByDesc('created_at')
+                ->first();
+            $equipo->ultima_observacion = $ultimoMovimiento ? $ultimoMovimiento->observaciones : '';
+        }
+
         return view('movimientos.multiple', compact('equipos', 'puestos'));
     }
 
     // Guardar movimientos múltiples
     public function guardarMultiple(Request $request)
     {
-        try {
-            $request->validate([
-                'equipos' => 'required|array',
-                'equipos.*' => 'exists:equipos,id',
-                'puesto_destino_id' => 'required|exists:puestos,id',
-                'observaciones' => 'nullable|array',
-                'observaciones.*' => 'nullable|string|max:255',
+        $request->validate([
+            'equipos' => 'required|array',
+            'equipos.*' => 'exists:equipos,id',
+            'puesto_destino_id' => 'required|exists:puestos,id',
+            'observaciones' => 'nullable|array',
+            'observaciones.*' => 'nullable|string|max:255',
+        ]);
+
+        $puestoDestino = Puesto::findOrFail($request->puesto_destino_id);
+
+        foreach ($request->equipos as $equipoId) {
+            $equipo = Equipo::findOrFail($equipoId);
+
+            Movimiento::create([
+                'equipo_id' => $equipo->id,
+                'usuario_id' => Auth::id(),
+                'puesto_origen_id' => $equipo->puesto_actual_id,
+                'puesto_destino_id' => $request->puesto_destino_id,
+                'observaciones' => $request->observaciones[$equipoId] ?? '',
             ]);
 
-            $puestoDestino = Puesto::findOrFail($request->puesto_destino_id);
+            $equipo->update([
+                'puesto_actual_id' => $request->puesto_destino_id,
+            ]);
+        }
 
-            foreach ($request->equipos as $equipoId) {
-                $equipo = Equipo::findOrFail($equipoId);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Movimientos múltiples registrados correctamente.',
+                'puesto_nombre' => $puestoDestino->nombre,
+            ]);
+        }
 
+        return redirect()->route('equipos.index')->with('success', 'Movimientos múltiples registrados correctamente.');
+    }
+
+    public function equiposPorPuesto($puestoId)
+    {
+        $puesto = Puesto::findOrFail($puestoId);
+        $equipos = Equipo::where('puesto_actual_id', $puesto->id)->get();
+
+        foreach ($equipos as $equipo) {
+            $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
+                ->orderByDesc('created_at')
+                ->first();
+
+            $equipo->ultima_observacion = $ultimoMovimiento ? $ultimoMovimiento->observaciones : '';
+        }
+
+        $puestos = Puesto::all();
+
+        return view('equipos.porPuesto', compact('puesto', 'equipos', 'puestos'));
+    }
+
+    // Nuevo método para guardar observaciones sin mover equipos
+    public function guardarObservacionesMultiple(Request $request)
+    {
+        $request->validate([
+            'equipos' => 'required|array',
+            'equipos.*' => 'exists:equipos,id',
+            'observaciones' => 'nullable|array',
+            'observaciones.*' => 'nullable|string|max:255',
+        ]);
+
+        foreach ($request->equipos as $equipoId) {
+            $equipo = Equipo::find($equipoId);
+            if ($equipo) {
                 Movimiento::create([
                     'equipo_id' => $equipo->id,
                     'usuario_id' => Auth::id(),
                     'puesto_origen_id' => $equipo->puesto_actual_id,
-                    'puesto_destino_id' => $request->puesto_destino_id,
+                    'puesto_destino_id' => $equipo->puesto_actual_id, // mismo puesto, no se mueve
                     'observaciones' => $request->observaciones[$equipoId] ?? '',
                 ]);
-
-                $equipo->update([
-                    'puesto_actual_id' => $request->puesto_destino_id,
-                ]);
             }
-
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'mensaje' => 'Movimientos múltiples registrados correctamente.',
-                    'puesto_nombre' => $puestoDestino->nombre,
-                ]);
-            }
-
-            return redirect()->route('equipos.index')->with('success', 'Movimientos múltiples registrados correctamente.');
-
-        } catch (\Throwable $e) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'mensaje' => 'Ocurrió un error al registrar los movimientos.',
-                    'error' => $e->getMessage(),
-                ], 500);
-            }
-
-            return redirect()->route('equipos.index')->with('error', 'Error al registrar movimientos.');
         }
+
+        return response()->json(['message' => 'Observaciones guardadas correctamente']);
     }
 }

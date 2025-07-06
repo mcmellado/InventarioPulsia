@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Equipos modelo {{ $modelo }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        .tick {
+            font-size: 1.3em;
+            color: green;
+            margin-left: 6px;
+            user-select: none;
+            display: none;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -65,12 +75,14 @@
                             <td>{{ $equipo->numero_serie }}</td>
                             <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
                             <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
-                            <td>
+                            <td class="d-flex align-items-center gap-2">
                                 <input type="text"
                                        name="observaciones[{{ $equipo->id }}]"
-                                       class="form-control form-control-sm"
+                                       class="form-control form-control-sm obs-input"
                                        placeholder="Escribe una observación"
-                                       value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}">
+                                       value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
+                                       data-equipo-id="{{ $equipo->id }}">
+                                <span class="tick" title="Guardado">✔️</span>
                             </td>
                         </tr>
                     @endforeach
@@ -92,6 +104,7 @@
         const selectAll = document.getElementById('selectAll');
         const alertBox = document.getElementById('alertSuccess');
         const alertError = document.getElementById('alertError');
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         function toggleMoverButton() {
             const anyChecked = [...checkboxes].some(cb => cb.checked);
@@ -147,12 +160,10 @@
                     }
                 });
 
-                // Limpiar selección
                 selectAll.checked = false;
                 selectPuesto.value = "";
                 toggleMoverButton();
 
-                // Mostrar éxito
                 alertBox.classList.remove('d-none');
                 setTimeout(() => alertBox.classList.add('d-none'), 4000);
 
@@ -162,6 +173,61 @@
                 setTimeout(() => alertError.classList.add('d-none'), 4000);
             }
         });
+
+        // Guardar observaciones automáticamente 
+        document.querySelectorAll('.obs-input').forEach(input => {
+            let timeoutId;
+
+            input.addEventListener('input', () => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    guardarObservacion(input);
+                }, 800);
+            });
+
+            input.addEventListener('blur', () => {
+                clearTimeout(timeoutId);
+                guardarObservacion(input);
+            });
+        });
+
+        async function guardarObservacion(input) {
+            const equipoId = input.dataset.equipoId;
+            const observacion = input.value.trim();
+            const tick = input.nextElementSibling;
+
+            if (input.dataset.lastValue === observacion) {
+                return;
+            }
+            input.dataset.lastValue = observacion;
+
+            try {
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('equipos[]', equipoId);
+                formData.append(`observaciones[${equipoId}]`, observacion);
+
+                const response = await fetch('{{ route("observaciones.guardarMultiple") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('Error al guardar observación');
+
+                tick.style.display = 'inline';
+                setTimeout(() => {
+                    tick.style.display = 'none';
+                }, 1500);
+
+            } catch (error) {
+                console.error(error);
+                alert('Error al guardar la observación.');
+            }
+        }
     });
 </script>
 
