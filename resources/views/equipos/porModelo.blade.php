@@ -20,6 +20,7 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="text-primary">Equipos modelo: {{ $modelo }}</h1>
+        <a href="{{ route('equipos.crear') }}" class="btn btn-success me-2">Añadir nuevos equipos</a>
         <a href="{{ route('equipos.index') }}" class="btn btn-secondary">Volver a la lista general</a>
     </div>
 

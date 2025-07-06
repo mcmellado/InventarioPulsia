@@ -10,6 +10,7 @@
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="text-primary">📋 Lotes de equipos</h1>
+            <a href="{{ route('equipos.crear') }}" class="btn btn-success me-2">Añadir nuevos equipos</a>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

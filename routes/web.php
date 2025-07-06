@@ -76,6 +76,11 @@ Route::post('/movimientos/guardar-multiple', [MovimientoController::class, 'guar
 Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
 Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
 
+Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.crear');
+Route::post('/equipos/guardar', [EquipoController::class, 'guardar'])->name('equipos.guardar');
+Route::post('/equipos/guardar-multiple', [EquipoController::class, 'guardarMultiple'])->name('equipos.guardarMultiple');
+
+
 
 
 
