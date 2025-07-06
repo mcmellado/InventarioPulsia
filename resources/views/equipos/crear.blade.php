@@ -10,32 +10,49 @@
 <div class="container mt-5">
     <h1 class="mb-4">Añadir varios equipos</h1>
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            @if(session('duplicados'))
+                <p><strong>Números de serie duplicados:</strong></p>
+                <ul>
+                    @foreach(session('duplicados') as $dup)
+                        <li>{{ $dup }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    @endif
+
     <form action="{{ route('equipos.guardarMultiple') }}" method="POST">
         @csrf
 
         <div class="mb-3">
             <label for="numeros_serie" class="form-label">Números de serie (uno por línea)</label>
-            <textarea class="form-control" id="numeros_serie" name="numeros_serie" rows="8" placeholder="Escribe o pega aquí los números de serie, uno por línea" required></textarea>
+            <textarea class="form-control @error('numeros_serie') is-invalid @enderror" id="numeros_serie" name="numeros_serie" rows="8" placeholder="Escribe o pega aquí los números de serie, uno por línea" required>{{ old('numeros_serie') }}</textarea>
+            @error('numeros_serie')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
             <label for="modelo" class="form-label">Modelo</label>
-            <input type="text" class="form-control" id="modelo" name="modelo" required>
+            <input type="text" class="form-control @error('modelo') is-invalid @enderror" id="modelo" name="modelo" required value="{{ old('modelo') }}">
+            @error('modelo')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="mb-3">
-            <label for="fecha_ingreso" class="form-label">Fecha de ingreso</label>
-            <input type="date" class="form-control" id="fecha_ingreso" name="fecha_ingreso" required>
-        </div>
-
-        <div class="mb-3">
-            <label for="puesto_actual_id" class="form-label">Puesto</label>
-            <select class="form-select" id="puesto_actual_id" name="puesto_actual_id" required>
-                <option value="" disabled selected>Selecciona un puesto</option>
-                @foreach($puestos as $puesto)
-                    <option value="{{ $puesto->id }}">{{ $puesto->nombre }}</option>
-                @endforeach
-            </select>
+            <label for="fecha_ingreso" class="form-label">Fecha de ingreso <small class="text-muted">(Opcional, si no se pone será hoy)</small></label>
+            <input type="date" class="form-control @error('fecha_ingreso') is-invalid @enderror" id="fecha_ingreso" name="fecha_ingreso" value="{{ old('fecha_ingreso') }}">
+            @error('fecha_ingreso')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar equipos</button>

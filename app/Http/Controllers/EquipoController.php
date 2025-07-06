@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Carbon\Carbon; // Importar Carbon
 
 class EquipoController extends BaseController
 {
@@ -41,28 +42,51 @@ class EquipoController extends BaseController
         $request->validate([
             'numeros_serie' => 'required|string',
             'modelo' => 'required|string',
-            'fecha_ingreso' => 'required|date',
-            'puesto_actual_id' => 'required|exists:puestos,id',
+            'fecha_ingreso' => 'nullable|date',  // Opcional
+            // No validamos puesto_actual_id porque lo asignamos fijo
         ]);
 
-        // Separa los números de serie por líneas
+        // Buscar el puesto "Admisión"
+        $puestoAdmision = Puesto::where('nombre', 'Admisión')->first();
+
+        if (!$puestoAdmision) {
+            return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
+        }
+
+        // Si no hay fecha, poner hoy
+        $fechaIngreso = $request->fecha_ingreso ?: Carbon::today()->toDateString();
+
         $numerosSerie = preg_split('/\r\n|\r|\n/', trim($request->numeros_serie));
 
         $equiposGuardados = [];
+        $duplicados = [];
 
         foreach ($numerosSerie as $numero) {
             $numero = trim($numero);
             if ($numero === '') {
                 continue;
             }
-            // Aquí puedes agregar lógica para evitar duplicados si quieres
-            $equipo = Equipo::create([
+            // Evitar duplicados
+            if (Equipo::where('numero_serie', $numero)->exists()) {
+                $duplicados[] = $numero;
+                continue;
+            }
+
+            Equipo::create([
                 'numero_serie' => $numero,
                 'modelo' => $request->modelo,
-                'fecha_ingreso' => $request->fecha_ingreso,
-                'puesto_actual_id' => $request->puesto_actual_id,
+                'fecha_ingreso' => $fechaIngreso,
+                'puesto_actual_id' => $puestoAdmision->id,
             ]);
-            $equiposGuardados[] = $equipo;
+
+            $equiposGuardados[] = $numero;
+        }
+
+        if (count($duplicados) > 0) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['duplicados' => 'Los siguientes números de serie ya existen:'])
+                ->with('duplicados', $duplicados);
         }
 
         return redirect()->route('equipos.index')->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
