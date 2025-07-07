@@ -92,4 +92,19 @@ class EquipoController extends BaseController
         return redirect()->back()->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
 
     }
+
+    public function eliminarPorModelo($modelo)
+{
+    $eliminados = Equipo::where('modelo', $modelo)->delete();
+
+    return redirect()->back()->with('success', "$eliminados equipos del modelo '$modelo' eliminados correctamente.");
+}
+
+public function eliminarMultiple(Request $request)
+{
+    $ids = $request->input('equipos', []);
+    Equipo::whereIn('id', $ids)->delete();
+
+    return response()->json(['message' => 'Eliminado correctamente']);
+}
 }

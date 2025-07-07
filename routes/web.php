@@ -80,6 +80,11 @@ Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.
 Route::post('/equipos/guardar', [EquipoController::class, 'guardar'])->name('equipos.guardar');
 Route::post('/equipos/guardar-multiple', [EquipoController::class, 'guardarMultiple'])->name('equipos.guardarMultiple');
 
+Route::delete('/equipos/lote/{modelo}', [EquipoController::class, 'eliminarPorModelo'])->name('equipos.eliminarPorModelo');
+Route::post('/equipos/eliminar-multiple', [EquipoController::class, 'eliminarMultiple'])->name('equipos.eliminarMultiple');
+
+
+
 
 
 
