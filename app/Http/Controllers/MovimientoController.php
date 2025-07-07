@@ -20,6 +20,7 @@ class MovimientoController extends Controller
         $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
             ->orderByDesc('created_at')
             ->first();
+
         $equipo->ultima_observacion = $ultimoMovimiento ? $ultimoMovimiento->observaciones : '';
 
         return view('movimientos.crear', compact('equipo', 'puestos'));
@@ -141,18 +142,16 @@ class MovimientoController extends Controller
         ]);
 
         foreach ($request->equipos as $equipoId) {
-            $equipo = Equipo::find($equipoId);
-            if ($equipo) {
-                Movimiento::create([
-                    'equipo_id' => $equipo->id,
-                    'usuario_id' => Auth::id(),
-                    'puesto_origen_id' => $equipo->puesto_actual_id,
-                    'puesto_destino_id' => $equipo->puesto_actual_id, // mismo puesto, no se mueve
-                    'observaciones' => $request->observaciones[$equipoId] ?? '',
-                ]);
+            $ultimoMovimiento = Movimiento::where('equipo_id', $equipoId)
+                ->orderByDesc('created_at')
+                ->first();
+
+            if ($ultimoMovimiento) {
+                $ultimoMovimiento->observaciones = $request->observaciones[$equipoId] ?? $ultimoMovimiento->observaciones;
+                $ultimoMovimiento->save();
             }
         }
 
-        return response()->json(['message' => 'Observaciones guardadas correctamente']);
+        return response()->json(['message' => 'Observaciones actualizadas correctamente']);
     }
 }

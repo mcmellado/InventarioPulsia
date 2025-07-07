@@ -82,6 +82,10 @@ Route::post('/equipos/guardar-multiple', [EquipoController::class, 'guardarMulti
 
 Route::delete('/equipos/lote/{modelo}', [EquipoController::class, 'eliminarPorModelo'])->name('equipos.eliminarPorModelo');
 Route::post('/equipos/eliminar-multiple', [EquipoController::class, 'eliminarMultiple'])->name('equipos.eliminarMultiple');
+Route::get('/equipos/{equipo}/trazabilidad', [EquipoController::class, 'trazabilidad']);
+Route::get('/equipos/{id}/trazabilidad', [EquipoController::class, 'trazabilidad'])->name('equipos.trazabilidad');
+Route::post('/movimientos/guardar-observacion', [MovimientoController::class, 'guardarObservacion'])->name('movimientos.guardarObservacion');
+
 
 
 

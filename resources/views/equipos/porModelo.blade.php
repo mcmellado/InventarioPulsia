@@ -74,6 +74,7 @@
                             <th scope="col">Puesto actual</th>
                             <th scope="col">Fecha de ingreso</th>
                             <th scope="col">Observación</th>
+                            <th scope="col">Acciones</th> <!-- NUEVO -->
                         </tr>
                     </thead>
                     <tbody>
@@ -93,6 +94,11 @@
                                        value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
                                        data-equipo-id="{{ $equipo->id }}" />
                                 <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
+                            </td>
+                            <td> <!-- NUEVO: Botón Ver trazabilidad -->
+                                <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
+                                    Ver
+                                </button>
                             </td>
                         </tr>
                     @endforeach
@@ -117,6 +123,27 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para mostrar trazabilidad NUEVO -->
+<div class="modal fade" id="trazabilidadModal" tabindex="-1" aria-labelledby="trazabilidadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="trazabilidadModalLabel">Trazabilidad del equipo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="trazabilidadContent">
+            <!-- Aquí se llenará con la info del fetch -->
+            <p class="text-center">Cargando...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -199,54 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Guardar observaciones automáticamente
-    document.querySelectorAll('.obs-input').forEach(input => {
-        let timeoutId;
-
-        input.addEventListener('input', () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => guardarObservacion(input), 800);
-        });
-
-        input.addEventListener('blur', () => {
-            clearTimeout(timeoutId);
-            guardarObservacion(input);
-        });
-    });
-
-    async function guardarObservacion(input) {
-        const equipoId = input.dataset.equipoId;
-        const observacion = input.value.trim();
-        const tick = input.nextElementSibling;
-
-        if (input.dataset.lastValue === observacion) return;
-        input.dataset.lastValue = observacion;
-
-        try {
-            const formData = new FormData();
-            formData.append('_token', token);
-            formData.append('equipos[]', equipoId);
-            formData.append(`observaciones[${equipoId}]`, observacion);
-
-            const response = await fetch('{{ route("observaciones.guardarMultiple") }}', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': token
-                },
-                body: formData
-            });
-
-            if (!response.ok) throw new Error('Error al guardar observación');
-
-            tick.style.display = 'inline';
-            setTimeout(() => tick.style.display = 'none', 1500);
-
-        } catch (error) {
-            alert('Error al guardar la observación.');
-        }
-    }
-
     // Manejar confirmación del modal para eliminar equipos
     const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
@@ -290,6 +269,62 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             confirmDeleteBtn.disabled = false;
         }
+    });
+
+    // NUEVO: Manejar botón Ver trazabilidad
+    const trazabilidadModal = new bootstrap.Modal(document.getElementById('trazabilidadModal'));
+    const trazabilidadContent = document.getElementById('trazabilidadContent');
+
+    document.querySelectorAll('.btn-ver-trazabilidad').forEach(button => {
+        button.addEventListener('click', async () => {
+            const equipoId = button.dataset.equipoId;
+            trazabilidadContent.innerHTML = '<p class="text-center">Cargando...</p>';
+            trazabilidadModal.show();
+
+            try {
+                const response = await fetch(`/equipos/${equipoId}/trazabilidad`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) throw new Error('Error al obtener la trazabilidad');
+
+                const movimientos = await response.json();
+
+                if (movimientos.length === 0) {
+                    trazabilidadContent.innerHTML = '<p class="text-center">No hay movimientos registrados para este equipo.</p>';
+                    return;
+                }
+
+                // Crear tabla con la trazabilidad
+                let html = `<table class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Puesto origen</th>
+                            <th>Puesto destino</th>
+                            <th>Usuario</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                    movimientos.forEach(mov => {
+                        html += `<tr>
+                            <td>${mov.fecha}</td>
+                            <td>${mov.puesto_origen}</td>
+                            <td>${mov.puesto_destino}</td>
+                            <td>${mov.usuario}</td>
+                            <td>${mov.observaciones}</td>
+                        </tr>`;
+                    });
+
+
+                html += `</tbody></table>`;
+                trazabilidadContent.innerHTML = html;
+
+            } catch (error) {
+                trazabilidadContent.innerHTML = `<p class="text-danger text-center">Error al cargar la trazabilidad.</p>`;
+            }
+        });
     });
 });
 </script>

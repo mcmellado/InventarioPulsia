@@ -108,5 +108,25 @@ public function eliminarMultiple(Request $request)
     return response()->json(['message' => 'Eliminado correctamente']);
 }
 
+public function trazabilidad(Equipo $equipo)
+{
+    $movimientos = $equipo->movimientos()
+        ->with(['puestoOrigen', 'puestoDestino', 'usuario']) // cargar también usuario
+        ->orderByDesc('created_at') // mejor usar created_at para el orden cronológico
+        ->get();
+
+    $resultado = $movimientos->map(function($mov) {
+        return [
+            'fecha' => $mov->created_at->format('d-m-Y'),
+            'puesto_origen' => $mov->puestoOrigen->nombre ?? '-',
+            'puesto_destino' => $mov->puestoDestino->nombre ?? '-',
+            'usuario' => $mov->usuario ? $mov->usuario->name : 'N/A',
+            'observaciones' => $mov->observaciones ?? '',
+        ];
+    });
+
+    return response()->json($resultado);
+}
+
     
 }
