@@ -76,7 +76,7 @@
                             <th scope="col">Modelo</th>
                             <th scope="col">Fecha de ingreso</th>
                             <th scope="col">Observación</th>
-                            <th scope="col">Acciones</th>
+                            <th scope="col">Trazabilidad</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,7 +99,7 @@
                             </td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
-                                    Ver
+                                    Historial
                                 </button>
                             </td>
                         </tr>
