@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\UserController;
 
 
 // Mostrar formulario de login
@@ -86,6 +87,9 @@ Route::get('/equipos/{equipo}/trazabilidad', [EquipoController::class, 'trazabil
 Route::get('/equipos/{id}/trazabilidad', [EquipoController::class, 'trazabilidad'])->name('equipos.trazabilidad');
 Route::post('/movimientos/guardar-observacion', [MovimientoController::class, 'guardarObservacion'])->name('movimientos.guardarObservacion');
 Route::get('/equipos/puesto/{puesto}', [EquipoController::class, 'porPuesto'])->name('equipos.porPuesto');
+Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+Route::post('/users', [UserController::class, 'store'])->name('users.store');
+
 
 
 
