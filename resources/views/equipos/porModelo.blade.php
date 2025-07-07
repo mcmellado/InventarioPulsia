@@ -74,7 +74,7 @@
                             <th scope="col">Puesto actual</th>
                             <th scope="col">Fecha de ingreso</th>
                             <th scope="col">Observación</th>
-                            <th scope="col">Acciones</th> <!-- NUEVO -->
+                            <th scope="col">Acciones</th> 
                         </tr>
                     </thead>
                     <tbody>
@@ -95,7 +95,7 @@
                                        data-equipo-id="{{ $equipo->id }}" />
                                 <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
                             </td>
-                            <td> <!-- NUEVO: Botón Ver trazabilidad -->
+                            <td> <!--Botón Ver trazabilidad -->
                                 <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
                                     Ver
                                 </button>
@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleActionButtons();
         });
     });
-
+//no puedo mas
     selectPuesto.addEventListener('change', toggleActionButtons);
 
     form.addEventListener('submit', async (e) => {
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Manejar confirmación del modal para eliminar equipos
+    // Manejar confirmación del modal para eliminar equipos de putisimais mierda
     const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 

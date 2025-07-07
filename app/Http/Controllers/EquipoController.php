@@ -128,5 +128,20 @@ public function trazabilidad(Equipo $equipo)
     return response()->json($resultado);
 }
 
+public function porPuesto($puestoId)
+{
+    $puesto = Puesto::findOrFail($puestoId);
+    $equipos = Equipo::with('ultimoMovimiento') // o lo que necesites
+                     ->where('puesto_actual_id', $puesto->id)
+                     ->get();
+
+    $puestos = Puesto::all();
+
+    return view('equipos.porPuesto', compact('puesto', 'equipos', 'puestos'));
+}
+
+
+
+
     
 }
