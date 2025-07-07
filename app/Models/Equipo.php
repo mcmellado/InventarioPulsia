@@ -39,4 +39,9 @@ class Equipo extends Model
     {
         return $this->hasOne(Movimiento::class)->latestOfMany();
     }
+
+    public function puesto()
+{
+    return $this->belongsTo(Puesto::class);
+}
 }

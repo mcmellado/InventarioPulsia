@@ -107,4 +107,6 @@ public function eliminarMultiple(Request $request)
 
     return response()->json(['message' => 'Eliminado correctamente']);
 }
+
+    
 }

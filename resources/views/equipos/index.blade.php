@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <title>EQUIPOS PULSIA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .serialnumbers-list {
+            display: none;
+        }
+        /* Estilos para la lista de resultados */
+        #resultadosBusqueda {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        #resultadosBusqueda .resultado-item {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        #resultadosBusqueda .resultado-item:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -17,6 +36,14 @@
             <button type="submit" class="btn btn-danger">Cerrar sesión</button>
         </form>
     </div>
+
+    {{-- Input buscador --}}
+    <div class="mb-3">
+        <input type="search" id="buscarModeloSerial" class="form-control" placeholder="Buscar por modelo o número de serie..." aria-label="Buscar por modelo o número de serie" autocomplete="off">
+    </div>
+
+    {{-- Contenedor para resultados de búsqueda por serialnumber --}}
+    <div id="resultadosBusqueda" class="list-group"></div>
 
     {{-- Mostrar mensaje de éxito si lo hay --}}
     @if (session('success'))
@@ -33,9 +60,10 @@
     @endif
 
     {{-- Mostrar lotes de equipos agrupados por modelo --}}
+    <div id="listadoModelos">
     @forelse($equiposPorModelo as $modelo => $equipos)
-        <div class="card mb-3 shadow-sm">
-            <div class="card-body d-flex justify-content-between align-items-center">
+        <div class="card mb-3 shadow-sm modelo-card" data-modelo="{{ strtolower($modelo) }}">
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
                 <div class="d-flex align-items-center gap-3">
                     <h5 class="mb-0">
                         <a href="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}" class="text-decoration-none text-dark">
@@ -53,6 +81,19 @@
                     <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ Str::slug($modelo) }}">
                         ❌
                     </button>
+                </div>
+
+                {{-- Lista oculta de serialnumbers para búsqueda --}}
+                <div class="serialnumbers-list">
+                   @foreach($equipos as $equipo)
+                        <span class="serialnumber" 
+                            data-serial="{{ strtolower($equipo->numero_serie) }}" 
+                            data-modelo="{{ strtolower($modelo) }}" 
+                            data-puesto="{{ strtolower($equipo->puestoActual->nombre ?? '') }}"
+                            data-url="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}">
+                            {{ $equipo->numero_serie }}
+                        </span>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -83,6 +124,7 @@
     @empty
         <div class="alert alert-warning text-center mt-4">No hay equipos registrados.</div>
     @endforelse
+    </div>
 
     <hr>
 
@@ -113,5 +155,87 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const inputBuscar = document.getElementById('buscarModeloSerial');
+const resultadosDiv = document.getElementById('resultadosBusqueda');
+const listadoModelos = document.getElementById('listadoModelos');
+
+inputBuscar.addEventListener('input', function() {
+    const filtro = this.value.trim().toLowerCase();
+
+    if (filtro === '') {
+        // Mostrar listado de lotes y ocultar resultados
+        listadoModelos.style.display = 'block';
+        resultadosDiv.style.display = 'none';
+        resultadosDiv.innerHTML = '';
+
+        // Mostrar todas las tarjetas de modelo
+        const modelos = Array.from(document.querySelectorAll('.modelo-card'));
+        modelos.forEach(card => card.style.display = 'block');
+
+        return;
+    }
+
+    // Ocultar listado de lotes para mostrar resultados
+    listadoModelos.style.display = 'none';
+
+    // Buscar por modelo (lote)
+    const modelos = Array.from(document.querySelectorAll('.modelo-card'));
+    const modelosFiltrados = modelos.filter(card => card.getAttribute('data-modelo').includes(filtro));
+
+    // Buscar por serialnumber (equipos)
+    let resultadosEquipos = [];
+    modelos.forEach(card => {
+        const serials = card.querySelectorAll('.serialnumber');
+        serials.forEach(span => {
+            const serialText = span.getAttribute('data-serial');
+            if(serialText.includes(filtro)) {
+                resultadosEquipos.push({
+                    serial: span.textContent,
+                    modelo: span.getAttribute('data-modelo'),
+                    puesto: span.getAttribute('data-puesto'),
+                    url: span.getAttribute('data-url')
+                });
+            }
+        });
+    });
+
+    // Mostrar resultados por modelo si hay (como tarjetas)
+    if(modelosFiltrados.length > 0 && resultadosEquipos.length === 0) {
+        // Mostrar sólo los modelos filtrados
+        listadoModelos.style.display = 'block';
+        resultadosDiv.style.display = 'none';
+        modelos.forEach(card => {
+            card.style.display = modelosFiltrados.includes(card) ? 'block' : 'none';
+        });
+        resultadosDiv.innerHTML = '';
+    } else {
+        // Mostrar resultados de equipos (serialnumbers)
+        resultadosDiv.style.display = 'block';
+        resultadosDiv.innerHTML = '';
+
+        if(resultadosEquipos.length === 0) {
+            resultadosDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados.</div>';
+        } else {
+            resultadosEquipos.forEach(equipo => {
+                // Capitalizamos el nombre del modelo
+                const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
+                // Capitalizamos el puesto (si existe)
+                const puestoCapitalizado = equipo.puesto ? equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1) : 'N/A';
+
+                const item = document.createElement('a');
+                item.href = equipo.url;
+                item.className = 'list-group-item list-group-item-action resultado-item';
+                item.innerHTML = `<strong>Equipo:</strong> ${equipo.serial} <br> <small>Lote: ${modeloCapitalizado} | Puesto: ${puestoCapitalizado}</small>`;
+                resultadosDiv.appendChild(item);
+            });
+        }
+        // Ocultar todos los lotes porque mostramos resultados
+        modelos.forEach(card => card.style.display = 'none');
+    }
+});
+</script>
+
 </body>
 </html>
