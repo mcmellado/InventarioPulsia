@@ -149,12 +149,26 @@
             "logística",
             "venta"
         ];
+
+        // Contar equipos por puesto (agregamos 0 si no hay)
+        $conteoPorPuesto = [];
+        foreach($puestos as $puesto){
+            $conteoPorPuesto[$puesto] = 0;
+        }
+        foreach($equiposPorModelo as $modelo => $equipos){
+            foreach($equipos as $equipo){
+                $nombrePuesto = strtolower($equipo->puestoActual->nombre ?? '');
+                if(array_key_exists($nombrePuesto, $conteoPorPuesto)){
+                    $conteoPorPuesto[$nombrePuesto]++;
+                }
+            }
+        }
     @endphp
 
     <div class="d-flex flex-wrap gap-2">
         @foreach($puestos as $puesto)
             <a href="{{ route('puestos.porPuesto', $puesto) }}" class="btn btn-outline-success btn-sm text-capitalize">
-                {{ $puesto }}
+                {{ $puesto }} ({{ $conteoPorPuesto[$puesto] ?? 0 }})
             </a>
         @endforeach
     </div>
