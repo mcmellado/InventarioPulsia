@@ -70,41 +70,43 @@
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped align-middle">
                     <thead class="table-dark">
-                        <tr>
-                            <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
-                            <th scope="col">Número de serie</th>
-                            <th scope="col">Modelo</th>
-                            <th scope="col">Fecha de ingreso</th>
-                            <th scope="col">Observación</th>
-                            <th scope="col">Trazabilidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($equipos as $equipo)
-                        <tr data-id="{{ $equipo->id }}">
-                            <td>
-                                <input type="checkbox" name="equipos[]" value="{{ $equipo->id }}" class="equipo-checkbox" aria-label="Seleccionar equipo {{ $equipo->numero_serie }}" />
-                            </td>
-                            <td>{{ $equipo->numero_serie }}</td>
-                            <td>{{ $equipo->modelo }}</td>
-                            <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
-                            <td class="d-flex align-items-center gap-2">
-                                <input type="text"
-                                       name="observaciones[{{ $equipo->id }}]"
-                                       class="form-control form-control-sm obs-input"
-                                       placeholder="Escribe una observación"
-                                       value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
-                                       data-equipo-id="{{ $equipo->id }}" />
-                                <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
-                                    Historial
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
+    <tr>
+        <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
+        <th scope="col">Número de serie</th>
+        <th scope="col">Puesto actual</th>
+        <th scope="col">Proveedor</th> <!-- Nueva columna -->
+        <th scope="col">Fecha de ingreso</th>
+        <th scope="col">Observación</th>
+        <th scope="col">Trazabilidad</th> 
+    </tr>
+</thead>
+<tbody>
+@foreach($equipos as $equipo)
+    <tr data-id="{{ $equipo->id }}">
+        <td>
+            <input type="checkbox" name="equipos[]" value="{{ $equipo->id }}" class="equipo-checkbox" aria-label="Seleccionar equipo {{ $equipo->numero_serie }}" />
+        </td>
+        <td>{{ $equipo->numero_serie }}</td>
+        <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
+        <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td> <!-- Aquí mostramos el proveedor -->
+        <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
+        <td class="d-flex align-items-center gap-2">
+            <input type="text"
+                   name="observaciones[{{ $equipo->id }}]"
+                   class="form-control form-control-sm obs-input"
+                   placeholder="Escribe una observación"
+                   value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
+                   data-equipo-id="{{ $equipo->id }}" />
+            <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
+        </td>
+        <td>
+            <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
+                Historial
+            </button>
+        </td>
+    </tr>
+@endforeach
+</tbody>
                 </table>
             </div>
         </form>

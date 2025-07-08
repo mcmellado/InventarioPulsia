@@ -13,23 +13,12 @@ return new class extends Migration
             $table->string('numero_serie')->unique();
             $table->string('modelo');
 
-            $table->foreignId('puesto_actual_id')
-                  ->nullable()
-                  ->constrained('puestos')
-                  ->onDelete('set null');
-
-            $table->foreignId('proveedor_id')
-                  ->nullable()
-                  ->constrained('proveedores')
-                  ->onDelete('set null');
-
-            $table->foreignId('comprador_id')
-                  ->nullable()
-                  ->constrained('compradores')
-                  ->onDelete('set null');
+            $table->foreignId('puesto_actual_id')->nullable()->constrained('puestos')->onDelete('set null');
+            $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('set null');
+            $table->foreignId('comprador_id')->nullable()->constrained('compradores')->onDelete('set null');
 
             $table->date('fecha_ingreso')->nullable();
-            $table->timestamps(); 
+            $table->timestamps();
         });
     }
 

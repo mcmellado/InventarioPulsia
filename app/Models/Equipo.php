@@ -44,4 +44,9 @@ class Equipo extends Model
 {
     return $this->belongsTo(Puesto::class);
 }
+
+public function proveedor()
+{
+    return $this->belongsTo(Proveedor::class);
+}
 }

@@ -23,12 +23,13 @@ class EquipoController extends BaseController
     }
     
     public function porModelo($modelo)
-    {
-        $equipos = Equipo::with('puestoActual')->where('modelo', $modelo)->get();
-        $puestos = Puesto::all();
+{
+    $equipos = Equipo::with(['puestoActual', 'proveedor'])->where('modelo', $modelo)->get();
+    $puestos = Puesto::all();
 
-        return view('equipos.porModelo', compact('modelo', 'equipos', 'puestos'));
-    }
+    return view('equipos.porModelo', compact('modelo', 'equipos', 'puestos'));
+}
+
 
     public function crear()
     {
@@ -141,7 +142,4 @@ public function porPuesto($puestoId)
 }
 
 
-
-
-    
 }
