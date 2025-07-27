@@ -233,47 +233,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Botón eliminar: muestra modal confirmación
-    const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                        const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
     confirmDeleteBtn.addEventListener('click', async () => {
+        confirmDeleteBtn.disabled = true;
         alertSuccess.classList.add('d-none');
         alertError.classList.add('d-none');
 
-        const equiposSeleccionados = [...checkboxes].filter(cb => cb.checked).map(cb => cb.value);
-        if (equiposSeleccionados.length === 0) return;
+        const formData = new FormData();
+        formData.append('_token', token);
+        document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
+            formData.append('equipos[]', chk.value);
+        });
 
         try {
-            const response = await fetch("{{ route('equipos.eliminarMultiple') }}", {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token
-                },
-                body: JSON.stringify({ equipos: equiposSeleccionados })
+            const response = await fetch('{{ route("equipos.eliminarMultiple") }}', {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': token },
+                body: formData
             });
 
-            if (!response.ok) throw new Error("Error al eliminar equipos");
+            if (!response.ok) throw new Error('Error al eliminar');
 
-            // Eliminar filas seleccionadas
-            checkboxes.forEach(chk => {
-                if (chk.checked) {
-                    chk.closest('tr').remove();
-                }
+            // Remover filas eliminadas
+            document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
+                chk.closest('tr').remove();
             });
-
-            selectAll.checked = false;
+            
             toggleActionButtons();
-            confirmDeleteModal.hide();
 
             alertSuccess.textContent = "Equipos eliminados correctamente.";
             alertSuccess.classList.remove('d-none');
             setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
+
+            confirmDeleteModal.hide();
         } catch (error) {
-            console.error(error);
             alertError.textContent = "Error al eliminar los equipos.";
             alertError.classList.remove('d-none');
+            setTimeout(() => alertError.classList.add('d-none'), 4000);
+        } finally {
+            confirmDeleteBtn.disabled = false;
         }
     });
 

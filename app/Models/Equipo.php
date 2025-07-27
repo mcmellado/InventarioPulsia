@@ -49,4 +49,10 @@ public function proveedor()
 {
     return $this->belongsTo(Proveedor::class);
 }
+
+public function comprobaciones()
+{
+    return $this->hasMany(Comprobacion::class);
+}
+
 }
