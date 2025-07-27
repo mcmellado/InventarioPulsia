@@ -68,44 +68,49 @@
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped align-middle">
                     <thead class="table-dark">
-    <tr>
-        <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
-        <th scope="col">Número de serie</th>
-        <th scope="col">Puesto actual</th>
-        <th scope="col">Proveedor</th> <!-- Nueva columna -->
-        <th scope="col">Fecha de ingreso</th>
-        <th scope="col">Observación</th>
-        <th scope="col">Trazabilidad</th> 
-    </tr>
-</thead>
-<tbody>
-@foreach($equipos as $equipo)
-    <tr data-id="{{ $equipo->id }}">
-        <td>
-            <input type="checkbox" name="equipos[]" value="{{ $equipo->id }}" class="equipo-checkbox" aria-label="Seleccionar equipo {{ $equipo->numero_serie }}" />
-        </td>
-        <td>{{ $equipo->numero_serie }}</td>
-        <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
-        <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td> <!-- Aquí mostramos el proveedor -->
-        <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
-        <td class="d-flex align-items-center gap-2">
-            <input type="text"
-                   name="observaciones[{{ $equipo->id }}]"
-                   class="form-control form-control-sm obs-input"
-                   placeholder="Escribe una observación"
-                   value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
-                   data-equipo-id="{{ $equipo->id }}" />
-            <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
-        </td>
-        <td>
-            <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
-                Historial
-            </button>
-        </td>
-    </tr>
-@endforeach
-</tbody>
-
+                        <tr>
+                            <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
+                            <th scope="col">Número de serie</th>
+                            <th scope="col">Puesto actual</th>
+                            <th scope="col">Proveedor</th>
+                            <th scope="col">Fecha de ingreso</th>
+                            <th scope="col">Observación</th>
+                            <th scope="col">Trazabilidad</th>
+                            <th scope="col">Calidad</th> 
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($equipos as $equipo)
+                        <tr data-id="{{ $equipo->id }}">
+                            <td>
+                                <input type="checkbox" name="equipos[]" value="{{ $equipo->id }}" class="equipo-checkbox" aria-label="Seleccionar equipo {{ $equipo->numero_serie }}" />
+                            </td>
+                            <td>{{ $equipo->numero_serie }}</td>
+                            <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
+                            <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td>
+                            <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
+                            <td class="d-flex align-items-center gap-2">
+                                <input type="text"
+                                       name="observaciones[{{ $equipo->id }}]"
+                                       class="form-control form-control-sm obs-input"
+                                       placeholder="Escribe una observación"
+                                       value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
+                                       data-equipo-id="{{ $equipo->id }}" />
+                                <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
+                                    Historial
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm btn-ver-calidad" data-equipo-id="{{ $equipo->id }}">
+                                    Estado del equipo
+                                </button>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
                 </table>
             </div>
         </form>
@@ -131,7 +136,7 @@
   </div>
 </div>
 
-<!-- Modal para mostrar trazabilidad NUEVO -->
+<!-- Modal para mostrar trazabilidad -->
 <div class="modal fade" id="trazabilidadModal" tabindex="-1" aria-labelledby="trazabilidadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -141,7 +146,6 @@
       </div>
       <div class="modal-body">
         <div id="trazabilidadContent">
-            <!-- Aquí se llenará con la info del fetch -->
             <p class="text-center">Cargando...</p>
         </div>
       </div>
@@ -151,6 +155,97 @@
     </div>
   </div>
 </div>
+
+<!-- Modal para mostrar calidad -->
+<div class="modal fade" id="calidadModal" tabindex="-1" aria-labelledby="calidadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="calidadModalLabel">Información de calidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+            <div class="modal-body">
+  <p>Marca el estado de calidad del equipo:</p>
+  <div class="d-flex flex-wrap gap-3">
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="pantalla" data-status="false">
+      Pantalla <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="teclado" data-status="false">
+      Teclado <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="hardware" data-status="false">
+      Hardware <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="bateria" data-status="false">
+      Batería <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="pintura" data-status="false">
+      Pintura <span class="ms-2 d-none">&#10003;</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const storageKey = 'calidadEstado';
+
+  // Carga estado guardado
+  function cargarEstado() {
+    const estadoStr = localStorage.getItem(storageKey);
+    if (!estadoStr) return;
+    const estado = JSON.parse(estadoStr);
+
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+      const key = btn.getAttribute('data-key');
+      if (estado[key]) {
+        btn.setAttribute('data-status', 'true');
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        btn.querySelector('span').classList.remove('d-none');
+      } else {
+        btn.setAttribute('data-status', 'false');
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+        btn.querySelector('span').classList.add('d-none');
+      }
+    });
+  }
+
+  // Guarda estado actual
+  function guardarEstado() {
+    const estado = {};
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+      const key = btn.getAttribute('data-key');
+      estado[key] = btn.getAttribute('data-status') === 'true';
+    });
+    localStorage.setItem(storageKey, JSON.stringify(estado));
+  }
+
+  document.querySelectorAll('.quality-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isOk = btn.getAttribute('data-status') === 'true';
+      if (isOk) {
+        btn.setAttribute('data-status', 'false');
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+        btn.querySelector('span').classList.add('d-none');
+      } else {
+        btn.setAttribute('data-status', 'true');
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        btn.querySelector('span').classList.remove('d-none');
+      }
+      guardarEstado();
+    });
+  });
+
+
+  const modalElement = document.getElementById('calidadModal'); 
+  modalElement.addEventListener('show.bs.modal', cargarEstado);
+
+  cargarEstado();
+</script>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -185,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleActionButtons();
         });
     });
-//no puedo mas
+
     selectPuesto.addEventListener('change', toggleActionButtons);
 
     form.addEventListener('submit', async (e) => {
@@ -229,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Manejar confirmación del modal para eliminar equipos de putisimais mierda
+    // Modal confirmación eliminación
     const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
@@ -257,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
                 chk.closest('tr').remove();
             });
-            
+
             toggleActionButtons();
 
             alertSuccess.textContent = "Equipos eliminados correctamente.";
@@ -274,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // NUEVO: Manejar botón Ver trazabilidad
+    // Manejar botón Ver trazabilidad
     const trazabilidadModal = new bootstrap.Modal(document.getElementById('trazabilidadModal'));
     const trazabilidadContent = document.getElementById('trazabilidadContent');
 
@@ -320,13 +415,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         </tr>`;
                     });
 
-
                 html += `</tbody></table>`;
                 trazabilidadContent.innerHTML = html;
 
             } catch (error) {
                 trazabilidadContent.innerHTML = `<p class="text-danger text-center">Error al cargar la trazabilidad.</p>`;
             }
+        });
+    });
+
+    // Manejar botón Calidad (modal simple con checkbox placeholder)
+    const calidadModal = new bootstrap.Modal(document.getElementById('calidadModal'));
+
+    document.querySelectorAll('.btn-ver-calidad').forEach(button => {
+        button.addEventListener('click', () => {
+            // Por ahora no carga info dinámica, se puede mejorar
+            calidadModal.show();
         });
     });
 });
