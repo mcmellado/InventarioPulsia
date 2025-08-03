@@ -33,66 +33,68 @@ class EquipoController extends BaseController
 
     public function crear()
     {
-        $puestos = Puesto::all(); 
-        return view('equipos.crear', compact('puestos'));
+         $modelos = Equipo::select('modelo')->distinct()->pluck('modelo');
+
+    // Retornar la vista pasando los modelos
+    return view('equipos.crear', compact('modelos'));
     }
 
-    // Nuevo método para guardar múltiples equipos
     public function guardarMultiple(Request $request)
-    {
-        $request->validate([
-            'numeros_serie' => 'required|string',
-            'modelo' => 'required|string',
-            'fecha_ingreso' => 'nullable|date',  // Opcional
-            // No validamos puesto_actual_id porque lo asignamos fijo
+{
+    $request->validate([
+        'numeros_serie' => 'required|string',
+        'modelo_select' => 'required|string',
+        'modelo' => 'required_if:modelo_select,otro|string|nullable',
+        'fecha_ingreso' => 'nullable|date',  // Opcional
+    ]);
+
+
+    $modelo = $request->modelo_select === 'otro' ? $request->modelo : $request->modelo_select;
+
+    $puestoAdmision = Puesto::where('nombre', 'Admisión')->first();
+
+    if (!$puestoAdmision) {
+        return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
+    }
+
+    // Si no hay fecha, poner hoy
+    $fechaIngreso = $request->fecha_ingreso ?: Carbon::today()->toDateString();
+
+    $numerosSerie = preg_split('/\r\n|\r|\n/', trim($request->numeros_serie));
+
+    $equiposGuardados = [];
+    $duplicados = [];
+
+    foreach ($numerosSerie as $numero) {
+        $numero = trim($numero);
+        if ($numero === '') {
+            continue;
+        }
+        // Evitar duplicados
+        if (Equipo::where('numero_serie', $numero)->exists()) {
+            $duplicados[] = $numero;
+            continue;
+        }
+
+        Equipo::create([
+            'numero_serie' => $numero,
+            'modelo' => $modelo,
+            'fecha_ingreso' => $fechaIngreso,
+            'puesto_actual_id' => $puestoAdmision->id,
         ]);
 
-        // Buscar el puesto "Admisión"
-        $puestoAdmision = Puesto::where('nombre', 'Admisión')->first();
-
-        if (!$puestoAdmision) {
-            return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
-        }
-
-        // Si no hay fecha, poner hoy
-        $fechaIngreso = $request->fecha_ingreso ?: Carbon::today()->toDateString();
-
-        $numerosSerie = preg_split('/\r\n|\r|\n/', trim($request->numeros_serie));
-
-        $equiposGuardados = [];
-        $duplicados = [];
-
-        foreach ($numerosSerie as $numero) {
-            $numero = trim($numero);
-            if ($numero === '') {
-                continue;
-            }
-            // Evitar duplicados
-            if (Equipo::where('numero_serie', $numero)->exists()) {
-                $duplicados[] = $numero;
-                continue;
-            }
-
-            Equipo::create([
-                'numero_serie' => $numero,
-                'modelo' => $request->modelo,
-                'fecha_ingreso' => $fechaIngreso,
-                'puesto_actual_id' => $puestoAdmision->id,
-            ]);
-
-            $equiposGuardados[] = $numero;
-        }
-
-        if (count($duplicados) > 0) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['duplicados' => 'Los siguientes números de serie ya existen:'])
-                ->with('duplicados', $duplicados);
-        }
-
-        return redirect()->back()->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
-
+        $equiposGuardados[] = $numero;
     }
+
+    if (count($duplicados) > 0) {
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['duplicados' => 'Los siguientes números de serie ya existen:'])
+            ->with('duplicados', $duplicados);
+    }
+
+    return redirect()->back()->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
+}
 
     public function eliminarPorModelo($modelo)
 {
@@ -112,8 +114,8 @@ public function eliminarMultiple(Request $request)
 public function trazabilidad(Equipo $equipo)
 {
     $movimientos = $equipo->movimientos()
-        ->with(['puestoOrigen', 'puestoDestino', 'usuario']) // cargar también usuario
-        ->orderByDesc('created_at') // mejor usar created_at para el orden cronológico
+        ->with(['puestoOrigen', 'puestoDestino', 'usuario']) 
+        ->orderByDesc('created_at') 
         ->get();
 
     $resultado = $movimientos->map(function($mov) {

@@ -10,20 +10,20 @@
 <div class="container mt-5">
     <h1 class="mb-4">Añadir varios equipos</h1>
 
-        @if (session('success'))
-    <div id="success-alert" class="alert alert-success">
-        {{ session('success') }}
-    </div>
+    @if (session('success'))
+        <div id="success-alert" class="alert alert-success">
+            {{ session('success') }}
+        </div>
 
-    <script>
-        setTimeout(function() {
-            const alert = document.getElementById('success-alert');
-            if (alert) {
-                alert.style.display = 'none';
-            }
-        }, 15000); // 15000 ms = 15 segundos
-    </script>
-@endif
+        <script>
+            setTimeout(function () {
+                const alert = document.getElementById('success-alert');
+                if (alert) {
+                    alert.style.display = 'none';
+                }
+            }, 15000);
+        </script>
+    @endif
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -54,9 +54,24 @@
             @enderror
         </div>
 
+        <!-- Sección para seleccionar modelo existente o escribir uno nuevo -->
         <div class="mb-3">
-            <label for="modelo" class="form-label">Modelo</label>
-            <input type="text" class="form-control @error('modelo') is-invalid @enderror" id="modelo" name="modelo" required value="{{ old('modelo') }}">
+            <label for="modelo_select" class="form-label">Modelo</label>
+            <select class="form-select @error('modelo') is-invalid @enderror" id="modelo_select" name="modelo_select" required>
+                <option value="">-- Selecciona un modelo --</option>
+                @foreach($modelos as $modelo)
+                    <option value="{{ $modelo }}" {{ old('modelo_select') == $modelo ? 'selected' : '' }}>{{ $modelo }}</option>
+                @endforeach
+                <option value="otro" {{ old('modelo_select') == 'otro' ? 'selected' : '' }}>Otro (especificar)</option>
+            </select>
+            @error('modelo')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3" id="nuevo_modelo_div" style="display: {{ old('modelo_select') == 'otro' ? 'block' : 'none' }};">
+            <label for="modelo" class="form-label">Nuevo modelo</label>
+            <input type="text" class="form-control @error('modelo') is-invalid @enderror" id="modelo" name="modelo" value="{{ old('modelo') }}" {{ old('modelo_select') == 'otro' ? 'required' : '' }}>
             @error('modelo')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -74,6 +89,27 @@
         <a href="{{ route('equipos.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const modeloSelect = document.getElementById("modelo_select");
+        const nuevoModeloDiv = document.getElementById("nuevo_modelo_div");
+        const nuevoModeloInput = document.getElementById("modelo");
+
+        function toggleNuevoModelo() {
+            if (modeloSelect.value === "otro") {
+                nuevoModeloDiv.style.display = "block";
+                nuevoModeloInput.required = true;
+            } else {
+                nuevoModeloDiv.style.display = "none";
+                nuevoModeloInput.required = false;
+            }
+        }
+
+        modeloSelect.addEventListener("change", toggleNuevoModelo);
+        toggleNuevoModelo(); // Ejecutar al cargar la página
+    });
+</script>
 
 </body>
 </html>
