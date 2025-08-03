@@ -105,7 +105,7 @@
                             </td>
                             <td>
                                 <button type="button" class="btn btn-primary btn-sm btn-ver-calidad" data-equipo-id="{{ $equipo->id }}">
-                                    Estado del equipo
+                                  Estado del equipo
                                 </button>
                             </td>
                         </tr>
@@ -186,64 +186,63 @@
 </div>
 
 <script>
-  const storageKey = 'calidadEstado';
+document.addEventListener('DOMContentLoaded', () => {
+    const calidadModal = new bootstrap.Modal(document.getElementById('calidadModal'));
+    const qualityButtons = document.querySelectorAll('.btn-ver-calidad');
+    const storagePrefix = 'calidadEstado_';
 
-  // Carga estado guardado
-  function cargarEstado() {
-    const estadoStr = localStorage.getItem(storageKey);
-    if (!estadoStr) return;
-    const estado = JSON.parse(estadoStr);
+    let currentEquipoId = null;
 
+    function cargarEstado(equipoId) {
+        const estadoStr = localStorage.getItem(storagePrefix + equipoId);
+        const estado = estadoStr ? JSON.parse(estadoStr) : {};
+
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            const key = btn.getAttribute('data-key');
+            const isOk = estado[key] === true;
+
+            btn.setAttribute('data-status', isOk ? 'true' : 'false');
+            btn.classList.toggle('btn-success', isOk);
+            btn.classList.toggle('btn-outline-secondary', !isOk);
+            btn.querySelector('span').classList.toggle('d-none', !isOk);
+        });
+    }
+
+    function guardarEstado(equipoId) {
+        const estado = {};
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            const key = btn.getAttribute('data-key');
+            estado[key] = btn.getAttribute('data-status') === 'true';
+        });
+        localStorage.setItem(storagePrefix + equipoId, JSON.stringify(estado));
+    }
+
+    // Clicks en los botones de calidad
     document.querySelectorAll('.quality-btn').forEach(btn => {
-      const key = btn.getAttribute('data-key');
-      if (estado[key]) {
-        btn.setAttribute('data-status', 'true');
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-success');
-        btn.querySelector('span').classList.remove('d-none');
-      } else {
-        btn.setAttribute('data-status', 'false');
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-outline-secondary');
-        btn.querySelector('span').classList.add('d-none');
-      }
+        btn.addEventListener('click', () => {
+            const isOk = btn.getAttribute('data-status') === 'true';
+            btn.setAttribute('data-status', isOk ? 'false' : 'true');
+            btn.classList.toggle('btn-success', !isOk);
+            btn.classList.toggle('btn-outline-secondary', isOk);
+            btn.querySelector('span').classList.toggle('d-none', isOk);
+
+            if (currentEquipoId) {
+                guardarEstado(currentEquipoId);
+            }
+        });
     });
-  }
 
-  // Guarda estado actual
-  function guardarEstado() {
-    const estado = {};
-    document.querySelectorAll('.quality-btn').forEach(btn => {
-      const key = btn.getAttribute('data-key');
-      estado[key] = btn.getAttribute('data-status') === 'true';
+    // Abrir modal con equipo específico
+    qualityButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentEquipoId = button.dataset.equipoId;
+            cargarEstado(currentEquipoId);
+            calidadModal.show();
+        });
     });
-    localStorage.setItem(storageKey, JSON.stringify(estado));
-  }
-
-  document.querySelectorAll('.quality-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const isOk = btn.getAttribute('data-status') === 'true';
-      if (isOk) {
-        btn.setAttribute('data-status', 'false');
-        btn.classList.remove('btn-success');
-        btn.classList.add('btn-outline-secondary');
-        btn.querySelector('span').classList.add('d-none');
-      } else {
-        btn.setAttribute('data-status', 'true');
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-success');
-        btn.querySelector('span').classList.remove('d-none');
-      }
-      guardarEstado();
-    });
-  });
-
-
-  const modalElement = document.getElementById('calidadModal'); 
-  modalElement.addEventListener('show.bs.modal', cargarEstado);
-
-  cargarEstado();
+});
 </script>
+
 
 
 
@@ -348,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) throw new Error('Error al eliminar');
 
-            // Remover filas eliminadas
             document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
                 chk.closest('tr').remove();
             });
@@ -424,15 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Manejar botón Calidad (modal simple con checkbox placeholder)
-    const calidadModal = new bootstrap.Modal(document.getElementById('calidadModal'));
 
-    document.querySelectorAll('.btn-ver-calidad').forEach(button => {
-        button.addEventListener('click', () => {
-            // Por ahora no carga info dinámica, se puede mejorar
-            calidadModal.show();
-        });
-    });
 });
 </script>
 
