@@ -54,7 +54,7 @@
             @enderror
         </div>
 
-        <!-- Sección para seleccionar modelo existente o escribir uno nuevo -->
+        <!-- Selección de modelo -->
         <div class="mb-3">
             <label for="modelo_select" class="form-label">Modelo</label>
             <select class="form-select @error('modelo') is-invalid @enderror" id="modelo_select" name="modelo_select" required>
@@ -77,6 +77,32 @@
             @enderror
         </div>
 
+        <!-- Selección de proveedor -->
+        <div class="mb-3">
+            <label for="proveedor_select" class="form-label">Proveedor</label>
+            <select class="form-select @error('proveedor') is-invalid @enderror" id="proveedor_select" name="proveedor_select" required>
+                <option value="">-- Selecciona un proveedor --</option>
+                @foreach($proveedores as $proveedor)
+                    <option value="{{ $proveedor->id }}" {{ old('proveedor_select') == $proveedor->id ? 'selected' : '' }}>
+                        {{ $proveedor->nombre }}
+                    </option>
+                @endforeach
+                <option value="otro" {{ old('proveedor_select') == 'otro' ? 'selected' : '' }}>Otro (especificar)</option>
+            </select>
+            @error('proveedor')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3" id="nuevo_proveedor_div" style="display: {{ old('proveedor_select') == 'otro' ? 'block' : 'none' }};">
+            <label for="nuevo_proveedor" class="form-label">Nuevo proveedor</label>
+            <input type="text" class="form-control @error('nuevo_proveedor') is-invalid @enderror" id="nuevo_proveedor" name="nuevo_proveedor" value="{{ old('nuevo_proveedor') }}" {{ old('proveedor_select') == 'otro' ? 'required' : '' }}>
+            @error('nuevo_proveedor')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <!-- Fecha ingreso -->
         <div class="mb-3">
             <label for="fecha_ingreso" class="form-label">Fecha de ingreso <small class="text-muted">(Opcional, si no se pone será hoy)</small></label>
             <input type="date" class="form-control @error('fecha_ingreso') is-invalid @enderror" id="fecha_ingreso" name="fecha_ingreso" value="{{ old('fecha_ingreso') }}">
@@ -107,7 +133,25 @@
         }
 
         modeloSelect.addEventListener("change", toggleNuevoModelo);
-        toggleNuevoModelo(); // Ejecutar al cargar la página
+        toggleNuevoModelo();
+
+        // Proveedor
+        const proveedorSelect = document.getElementById("proveedor_select");
+        const nuevoProveedorDiv = document.getElementById("nuevo_proveedor_div");
+        const nuevoProveedorInput = document.getElementById("nuevo_proveedor");
+
+        function toggleNuevoProveedor() {
+            if (proveedorSelect.value === "otro") {
+                nuevoProveedorDiv.style.display = "block";
+                nuevoProveedorInput.required = true;
+            } else {
+                nuevoProveedorDiv.style.display = "none";
+                nuevoProveedorInput.required = false;
+            }
+        }
+
+        proveedorSelect.addEventListener("change", toggleNuevoProveedor);
+        toggleNuevoProveedor();
     });
 </script>
 

@@ -9,7 +9,9 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-use Carbon\Carbon; // Importar Carbon
+use Carbon\Carbon; 
+use App\Models\Proveedor;
+
 
 class EquipoController extends BaseController
 {
@@ -32,22 +34,23 @@ class EquipoController extends BaseController
 
 
     public function crear()
-    {
-         $modelos = Equipo::select('modelo')->distinct()->pluck('modelo');
+{
+    $modelos = Equipo::select('modelo')->distinct()->pluck('modelo');
+    $proveedores = \App\Models\Proveedor::all(); 
+    return view('equipos.crear', compact('modelos', 'proveedores'));
+}
 
-    // Retornar la vista pasando los modelos
-    return view('equipos.crear', compact('modelos'));
-    }
 
     public function guardarMultiple(Request $request)
 {
     $request->validate([
-        'numeros_serie' => 'required|string',
-        'modelo_select' => 'required|string',
-        'modelo' => 'required_if:modelo_select,otro|string|nullable',
-        'fecha_ingreso' => 'nullable|date',  // Opcional
-    ]);
-
+    'numeros_serie' => 'required|string',
+    'modelo_select' => 'required|string',
+    'modelo' => 'required_if:modelo_select,otro|string|nullable',
+    'proveedor_select' => 'required|string',
+    'nuevo_proveedor' => 'required_if:proveedor_select,otro|string|nullable',
+    'fecha_ingreso' => 'nullable|date',
+]);
 
     $modelo = $request->modelo_select === 'otro' ? $request->modelo : $request->modelo_select;
 
@@ -57,9 +60,7 @@ class EquipoController extends BaseController
         return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
     }
 
-    // Si no hay fecha, poner hoy
     $fechaIngreso = $request->fecha_ingreso ?: Carbon::today()->toDateString();
-
     $numerosSerie = preg_split('/\r\n|\r|\n/', trim($request->numeros_serie));
 
     $equiposGuardados = [];
@@ -67,21 +68,34 @@ class EquipoController extends BaseController
 
     foreach ($numerosSerie as $numero) {
         $numero = trim($numero);
-        if ($numero === '') {
-            continue;
-        }
-        // Evitar duplicados
+        if ($numero === '') continue;
+
         if (Equipo::where('numero_serie', $numero)->exists()) {
             $duplicados[] = $numero;
             continue;
         }
 
-        Equipo::create([
-            'numero_serie' => $numero,
-            'modelo' => $modelo,
-            'fecha_ingreso' => $fechaIngreso,
-            'puesto_actual_id' => $puestoAdmision->id,
-        ]);
+            $modelo = $request->modelo_select === 'otro' ? $request->modelo : $request->modelo_select;
+
+
+            if ($request->proveedor_select === 'otro') {
+                $nuevoProveedor = new \App\Models\Proveedor();
+                $nuevoProveedor->nombre = $request->nuevo_proveedor;
+                $nuevoProveedor->save();
+                $proveedor_id = $nuevoProveedor->id;
+            } else {
+                $proveedor_id = $request->proveedor_select;
+            }
+
+
+             Equipo::create([
+                'numero_serie' => $numero,
+                'modelo' => $modelo,
+                'fecha_ingreso' => $fechaIngreso,
+                'proveedor_id' => $proveedor_id,
+                'puesto_actual_id' => $puestoAdmision->id,
+            ]);
+
 
         $equiposGuardados[] = $numero;
     }
@@ -95,6 +109,7 @@ class EquipoController extends BaseController
 
     return redirect()->back()->with('success', count($equiposGuardados) . ' equipos guardados correctamente.');
 }
+
 
     public function eliminarPorModelo($modelo)
 {
@@ -134,7 +149,7 @@ public function trazabilidad(Equipo $equipo)
 public function porPuesto($puestoId)
 {
     $puesto = Puesto::findOrFail($puestoId);
-    $equipos = Equipo::with('ultimoMovimiento') // o lo que necesites
+    $equipos = Equipo::with('ultimoMovimiento') 
                      ->where('puesto_actual_id', $puesto->id)
                      ->get();
 

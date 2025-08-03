@@ -65,7 +65,7 @@ Route::post('/movimientos/guardar-multiple', [MovimientoController::class, 'guar
 
 Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
 
-Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.crear'); // Puedes eliminar esta línea si no usas el formulario antiguo
+Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.crear'); 
 Route::post('/equipos/guardar', [EquipoController::class, 'guardar'])->name('equipos.guardar');
 Route::delete('/equipos/lote/{modelo}', [EquipoController::class, 'eliminarPorModelo'])->name('equipos.eliminarPorModelo');
 Route::post('/equipos/eliminar-multiple', [EquipoController::class, 'eliminarMultiple'])->name('equipos.eliminarMultiple');

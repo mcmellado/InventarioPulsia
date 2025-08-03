@@ -14,6 +14,7 @@ class Equipo extends Model
         'modelo',
         'puesto_actual_id',
         'fecha_ingreso',
+        'proveedor_id',
     ];
 
     /**
