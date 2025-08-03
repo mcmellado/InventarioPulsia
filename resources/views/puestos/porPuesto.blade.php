@@ -74,10 +74,11 @@
         <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
         <th scope="col">Número de serie</th>
         <th scope="col">Puesto actual</th>
-        <th scope="col">Proveedor</th> <!-- Nueva columna -->
+        <th scope="col">Proveedor</th> 
         <th scope="col">Fecha de ingreso</th>
         <th scope="col">Observación</th>
         <th scope="col">Trazabilidad</th> 
+        <th scope="col">Calidad</th> 
     </tr>
 </thead>
 <tbody>
@@ -102,6 +103,11 @@
         <td>
             <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
                 Historial
+            </button>
+        </td>
+        <td>
+            <button type="button" class="btn btn-primary btn-sm btn-ver-calidad" data-equipo-id="{{ $equipo->id }}">
+                Estado del equipo
             </button>
         </td>
     </tr>
@@ -151,6 +157,94 @@
     </div>
   </div>
 </div>
+
+<!-- Modal para mostrar calidad -->
+<div class="modal fade" id="calidadModal" tabindex="-1" aria-labelledby="calidadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="calidadModalLabel">Información de calidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+            <div class="modal-body">
+  <p>Marca el estado de calidad del equipo:</p>
+  <div class="d-flex flex-wrap gap-3">
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="pantalla" data-status="false">
+      Pantalla <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="teclado" data-status="false">
+      Teclado <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="hardware" data-status="false">
+      Hardware <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="bateria" data-status="false">
+      Batería <span class="ms-2 d-none">&#10003;</span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary quality-btn" data-key="pintura" data-status="false">
+      Pintura <span class="ms-2 d-none">&#10003;</span>
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const calidadModal = new bootstrap.Modal(document.getElementById('calidadModal'));
+    const qualityButtons = document.querySelectorAll('.btn-ver-calidad');
+    const storagePrefix = 'calidadEstado_';
+
+    let currentEquipoId = null;
+
+    function cargarEstado(equipoId) {
+        const estadoStr = localStorage.getItem(storagePrefix + equipoId);
+        const estado = estadoStr ? JSON.parse(estadoStr) : {};
+
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            const key = btn.getAttribute('data-key');
+            const isOk = estado[key] === true;
+
+            btn.setAttribute('data-status', isOk ? 'true' : 'false');
+            btn.classList.toggle('btn-success', isOk);
+            btn.classList.toggle('btn-outline-secondary', !isOk);
+            btn.querySelector('span').classList.toggle('d-none', !isOk);
+        });
+    }
+
+    function guardarEstado(equipoId) {
+        const estado = {};
+        document.querySelectorAll('.quality-btn').forEach(btn => {
+            const key = btn.getAttribute('data-key');
+            estado[key] = btn.getAttribute('data-status') === 'true';
+        });
+        localStorage.setItem(storagePrefix + equipoId, JSON.stringify(estado));
+    }
+
+    // Clicks en los botones de calidad
+    document.querySelectorAll('.quality-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isOk = btn.getAttribute('data-status') === 'true';
+            btn.setAttribute('data-status', isOk ? 'false' : 'true');
+            btn.classList.toggle('btn-success', !isOk);
+            btn.classList.toggle('btn-outline-secondary', isOk);
+            btn.querySelector('span').classList.toggle('d-none', isOk);
+
+            if (currentEquipoId) {
+                guardarEstado(currentEquipoId);
+            }
+        });
+    });
+
+    // Abrir modal con equipo específico
+    qualityButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentEquipoId = button.dataset.equipoId;
+            cargarEstado(currentEquipoId);
+            calidadModal.show();
+        });
+    });
+});
+</script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -222,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selectPuesto.value = "";
             toggleActionButtons();
 
-            alertSuccess.textContent = "Equipos movidos y observaciones guardadas correctamente.";
+            alertSuccess.textContent = "Equipos movidos correctamente.";
             alertSuccess.classList.remove('d-none');
             setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
         } catch (err) {
