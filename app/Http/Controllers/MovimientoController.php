@@ -130,8 +130,6 @@ class MovimientoController extends Controller
 
         return view('equipos.porPuesto', compact('puesto', 'equipos', 'puestos'));
     }
-
-    // Nuevo método para guardar observaciones sin mover equipos
     public function guardarObservacionesMultiple(Request $request)
     {
         $request->validate([

@@ -74,7 +74,8 @@
                             <th scope="col">Puesto actual</th>
                             <th scope="col">Proveedor</th>
                             <th scope="col">Fecha de ingreso</th>
-                            <th scope="col">Observación</th>
+                            <th scope="col">Listo para venta</th>
+                            <th scope="col">Observación</   th>
                             <th scope="col">Trazabilidad</th>
                             <th scope="col">Calidad</th> 
                         </tr>
@@ -89,6 +90,12 @@
                             <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
                             <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td>
                             <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm toggle-stock-btn {{ $equipo->stock ? 'btn-success' : 'btn-danger' }}" 
+                                    data-id="{{ $equipo->id }}">
+                                    {{ $equipo->stock ? '✔️' : '❌' }}
+                                </button>
+                            </td>
                             <td class="d-flex align-items-center gap-2">
                                 <input type="text"
                                        name="observaciones[{{ $equipo->id }}]"
@@ -420,6 +427,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 });
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        document.querySelectorAll('.toggle-stock-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+                const id = button.dataset.id;
+
+                try {
+                    const response = await fetch(`/equipos/${id}/toggle-stock`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error("Error al actualizar stock");
+
+                    const data = await response.json();
+                    if (data.stock) {
+                        button.classList.remove('btn-danger');
+                        button.classList.add('btn-success');
+                        button.textContent = '✔️';
+                    } else {
+                        button.classList.remove('btn-success');
+                        button.classList.add('btn-danger');
+                        button.textContent = '❌';
+                    }
+
+                } catch (err) {
+                    alert("No se pudo actualizar el stock");
+                }
+            });
+        });
+    });
+
 </script>
 
 </body>

@@ -75,3 +75,5 @@ Route::post('/movimientos/guardar-observacion', [MovimientoController::class, 'g
 Route::get('/equipos/puesto/{puesto}', [EquipoController::class, 'porPuesto'])->name('equipos.porPuesto');
 Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
+Route::patch('/equipos/{equipo}/toggle-stock', [EquipoController::class, 'toggleStock'])->name('equipos.toggleStock');
+

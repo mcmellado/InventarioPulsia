@@ -158,5 +158,16 @@ public function porPuesto($puestoId)
     return view('equipos.porPuesto', compact('puesto', 'equipos', 'puestos'));
 }
 
+        public function toggleStock(Equipo $equipo)
+    {
+        
+        $equipo->stock = !$equipo->stock;
+        $equipo->save();
+
+        return response()->json([
+            'success' => true,
+            'stock' => $equipo->stock
+        ]);
+    }
 
 }
