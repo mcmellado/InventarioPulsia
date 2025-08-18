@@ -8,7 +8,6 @@
         .serialnumbers-list {
             display: none;
         }
-        /* Estilos para la lista de resultados */
         #resultadosBusqueda {
             max-height: 300px;
             overflow-y: auto;
@@ -33,7 +32,7 @@
         <div>
             <a href="{{ route('equipos.crear') }}" class="btn btn-success me-2">Añadir nuevos equipos</a>
 
-            <!-- Botón para crear nuevo usuario -->
+   
             <a href="{{ route('users.create') }}" class="btn btn-primary me-2">Crear nuevo usuario</a>
         </div>
 
@@ -83,7 +82,7 @@
                         Ver equipos ({{ count($equipos) }})
                     </a>
 
-                    <!-- Botón que lanza el modal -->
+
                     <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ Str::slug($modelo) }}">
                         ❌
                     </button>
@@ -104,7 +103,7 @@
             </div>
         </div>
 
-        <!-- Modal de confirmación -->
+
         <div class="modal fade" id="modalEliminar{{ Str::slug($modelo) }}" tabindex="-1" aria-labelledby="modalLabel{{ Str::slug($modelo) }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -223,7 +222,6 @@ inputBuscar.addEventListener('input', function() {
 
     // Mostrar resultados por modelo si hay (como tarjetas)
     if(modelosFiltrados.length > 0 && resultadosEquipos.length === 0) {
-        // Mostrar sólo los modelos filtrados
         listadoModelos.style.display = 'block';
         resultadosDiv.style.display = 'none';
         modelos.forEach(card => {
@@ -239,9 +237,8 @@ inputBuscar.addEventListener('input', function() {
             resultadosDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados.</div>';
         } else {
             resultadosEquipos.forEach(equipo => {
-                // Capitalizamos el nombre del modelo
+ 
                 const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
-                // Capitalizamos el puesto (si existe)
                 const puestoCapitalizado = equipo.puesto ? equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1) : 'N/A';
 
                 const item = document.createElement('a');
@@ -251,7 +248,7 @@ inputBuscar.addEventListener('input', function() {
                 resultadosDiv.appendChild(item);
             });
         }
-        // Ocultar todos los lotes porque mostramos resultados
+
         modelos.forEach(card => card.style.display = 'none');
     }
 });

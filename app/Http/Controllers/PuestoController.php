@@ -11,7 +11,7 @@ class PuestoController extends Controller
 {
     public function index()
     {
-        // Lista todos los puestos con la cantidad de equipos asignados
+
         $puestos = Puesto::withCount('equipos')->get();
 
         return view('puestos.index', compact('puestos'));
@@ -21,10 +21,10 @@ class PuestoController extends Controller
     {
         $puesto = Puesto::where('nombre', $nombre)->firstOrFail();
 
-        // Obtener equipos relacionados con el puesto
+
         $equipos = $puesto->equipos()->with('puestoActual')->get();
 
-        // Para cada equipo agregar la última observación
+
         foreach ($equipos as $equipo) {
             $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
                 ->orderByDesc('created_at')

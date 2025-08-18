@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Auth;
 
 class MovimientoController extends Controller
 {
-    // Mostrar formulario para mover un equipo individualmente
+   
     public function crear($equipoId)
     {
         $equipo = Equipo::findOrFail($equipoId);
         $puestos = Puesto::all();
 
-        // Obtener última observación del equipo
+        
         $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
             ->orderByDesc('created_at')
             ->first();
@@ -26,7 +26,7 @@ class MovimientoController extends Controller
         return view('movimientos.crear', compact('equipo', 'puestos'));
     }
 
-    // Guardar movimiento para un solo equipo
+  
     public function guardar(Request $request, $equipoId)
     {
         $equipo = Equipo::findOrFail($equipoId);
@@ -51,7 +51,7 @@ class MovimientoController extends Controller
         return redirect()->route('equipos.index')->with('success', 'Movimiento registrado correctamente.');
     }
 
-    // Mostrar formulario para mover múltiples equipos seleccionados
+   
     public function crearMultiple(Request $request)
     {
         $equipoIds = $request->input('equipos', []);
@@ -62,7 +62,7 @@ class MovimientoController extends Controller
             return redirect()->route('equipos.index')->with('error', 'No seleccionaste ningún equipo.');
         }
 
-        // Añadir última observación a cada equipo
+
         foreach ($equipos as $equipo) {
             $ultimoMovimiento = Movimiento::where('equipo_id', $equipo->id)
                 ->orderByDesc('created_at')
@@ -73,7 +73,7 @@ class MovimientoController extends Controller
         return view('movimientos.multiple', compact('equipos', 'puestos'));
     }
 
-    // Guardar movimientos múltiples
+
     public function guardarMultiple(Request $request)
     {
         $request->validate([

@@ -117,7 +117,7 @@
     @endif
 </div>
 
-<!-- Modal confirmación eliminación -->
+
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -136,7 +136,7 @@
   </div>
 </div>
 
-<!-- Modal para mostrar trazabilidad -->
+
 <div class="modal fade" id="trazabilidadModal" tabindex="-1" aria-labelledby="trazabilidadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -156,7 +156,6 @@
   </div>
 </div>
 
-<!-- Modal para mostrar calidad -->
 <div class="modal fade" id="calidadModal" tabindex="-1" aria-labelledby="calidadModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-scrollable">
     <div class="modal-content">
@@ -217,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(storagePrefix + equipoId, JSON.stringify(estado));
     }
 
-    // Clicks en los botones de calidad
+
     document.querySelectorAll('.quality-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const isOk = btn.getAttribute('data-status') === 'true';
@@ -232,7 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Abrir modal con equipo específico
     qualityButtons.forEach(button => {
         button.addEventListener('click', () => {
             currentEquipoId = button.dataset.equipoId;
@@ -323,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Modal confirmación eliminación
+
     const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
@@ -367,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Manejar botón Ver trazabilidad
     const trazabilidadModal = new bootstrap.Modal(document.getElementById('trazabilidadModal'));
     const trazabilidadContent = document.getElementById('trazabilidadContent');
 
@@ -390,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Crear tabla con la trazabilidad
                 let html = `<table class="table table-striped table-bordered">
                     <thead class="table-dark">
                         <tr>

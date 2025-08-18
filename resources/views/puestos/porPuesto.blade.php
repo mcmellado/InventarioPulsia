@@ -89,7 +89,7 @@
         </td>
         <td>{{ $equipo->numero_serie }}</td>
         <td class="puesto-actual">{{ $equipo->puestoActual->nombre ?? 'N/A' }}</td>
-        <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td> <!-- Aquí mostramos el proveedor -->
+        <td>{{ $equipo->proveedor->nombre ?? 'N/A' }}</td>
         <td>{{ $equipo->fecha_ingreso ? \Carbon\Carbon::parse($equipo->fecha_ingreso)->format('d-m-Y') : 'No disponible' }}</td>
         <td class="d-flex align-items-center gap-2">
             <input type="text"
