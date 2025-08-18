@@ -77,10 +77,6 @@
                     <button type="button" class="btn btn-danger" id="eliminarSeleccionadosBtn" disabled  data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
                         Eliminar seleccionados
                     </button>
-                @else
-                    <button type="button" class="btn btn-danger" id="eliminarSeleccionadosBtn" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
-                        Eliminar seleccionados
-                    </button>
                 @endif
             </div>
 
@@ -268,159 +264,169 @@
 
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const form = document.getElementById('formMoverEquipos');
-                        const checkboxes = document.querySelectorAll('.equipo-checkbox');
-                        const selectPuesto = document.getElementById('puesto_destino_id');
-                        const btnMover = document.getElementById('moverSeleccionadosBtn');
-                        const btnEliminar = document.getElementById('eliminarSeleccionadosBtn');
-                        const selectAll = document.getElementById('selectAll');
-                        const alertSuccess = document.getElementById('alertSuccess');
-                        const alertError = document.getElementById('alertError');
-                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formMoverEquipos');
+    const checkboxes = document.querySelectorAll('.equipo-checkbox');
+    const selectPuesto = document.getElementById('puesto_destino_id');
+    const btnMover = document.getElementById('moverSeleccionadosBtn');
+    const btnEliminar = document.getElementById('eliminarSeleccionadosBtn');
+    const selectAll = document.getElementById('selectAll');
+    const alertSuccess = document.getElementById('alertSuccess');
+    const alertError = document.getElementById('alertError');
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-                        function toggleActionButtons() {
-                            const anyChecked = [...checkboxes].some(cb => cb.checked);
-                            const puestoSelected = selectPuesto.value !== "";
-                            btnMover.disabled = !(anyChecked && puestoSelected);
-                            btnEliminar.disabled = !anyChecked;
-                        }
+    function toggleActionButtons() {
+        const anyChecked = [...checkboxes].some(cb => cb.checked);
+        const puestoSelected = selectPuesto.value !== "";
 
-                        selectAll.addEventListener('change', function() {
-                            checkboxes.forEach(chk => chk.checked = this.checked);
-                            toggleActionButtons();
-                        });
+        btnMover.disabled = !(anyChecked && puestoSelected);
 
-                        checkboxes.forEach(chk => {
-                            chk.addEventListener('change', () => {
-                                if (!chk.checked) selectAll.checked = false;
-                                else if ([...checkboxes].every(cb => cb.checked)) selectAll.checked = true;
-                                toggleActionButtons();
-                            });
-                        });
+        if (btnEliminar) { 
+            btnEliminar.disabled = !anyChecked;
+        }
+    }
 
-                        selectPuesto.addEventListener('change', toggleActionButtons);
+    // Seleccionar todos
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(chk => chk.checked = this.checked);
+        toggleActionButtons();
+    });
 
-                        toggleActionButtons();
+    // Toggle individual
+    checkboxes.forEach(chk => {
+        chk.addEventListener('change', () => {
+            if (!chk.checked) selectAll.checked = false;
+            else if ([...checkboxes].every(cb => cb.checked)) selectAll.checked = true;
+            toggleActionButtons();
+        });
+    });
 
-                        form.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            alertSuccess.classList.add('d-none');
-                            alertError.classList.add('d-none');
+    selectPuesto.addEventListener('change', toggleActionButtons);
+    toggleActionButtons();
 
-                            const formData = new FormData(form);
+    // === Mover equipos ===
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alertSuccess.classList.add('d-none');
+        alertError.classList.add('d-none');
 
-                            try {
-                                const response = await fetch(form.action, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': token
-                                    },
-                                    body: formData
-                                });
+        const formData = new FormData(form);
 
-                                if (!response.ok) throw new Error("Error al mover los equipos");
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
+                body: formData
+            });
 
-                                const data = await response.json();
+            if (!response.ok) throw new Error("Error al mover los equipos");
 
-                                // Remover filas de los equipos que se movieron
-                                checkboxes.forEach(chk => {
-                                    if (chk.checked) {
-                                        chk.closest('tr').remove();
-                                    }
-                                });
+            // Remover filas movidas
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    chk.closest('tr').remove();
+                }
+            });
 
-                                selectAll.checked = false;
-                                selectPuesto.value = "";
-                                toggleActionButtons();
+            selectAll.checked = false;
+            selectPuesto.value = "";
+            toggleActionButtons();
 
-                                alertSuccess.textContent = "Equipos movidos correctamente.";
-                                alertSuccess.classList.remove('d-none');
-                                setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
-                            } catch (err) {
-                                console.error(err);
-                                alertError.textContent = "Error al guardar o mover los equipos.";
-                                alertError.classList.remove('d-none');
-                            }
-                        });
+            alertSuccess.textContent = "Equipos movidos correctamente.";
+            alertSuccess.classList.remove('d-none');
+            setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
+        } catch (err) {
+            console.error(err);
+            alertError.textContent = "Error al guardar o mover los equipos.";
+            alertError.classList.remove('d-none');
+        }
+    });
 
-                        // Botón eliminar: muestra modal confirmación
-                        const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-                        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    // === Eliminar equipos ===
+    if (btnEliminar) {
+        const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 
-                        confirmDeleteBtn.addEventListener('click', async () => {
-                            confirmDeleteBtn.disabled = true;
-                            alertSuccess.classList.add('d-none');
-                            alertError.classList.add('d-none');
+        btnEliminar.addEventListener('click', () => {
+            confirmDeleteModal.show();
+        });
 
-                            const formData = new FormData();
-                            formData.append('_token', token);
-                            document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
-                                formData.append('equipos[]', chk.value);
-                            });
+        confirmDeleteBtn.addEventListener('click', async () => {
+            confirmDeleteBtn.disabled = true;
+            alertSuccess.classList.add('d-none');
+            alertError.classList.add('d-none');
 
-                            try {
-                                const response = await fetch('{{ route("equipos.eliminarMultiple") }}', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-CSRF-TOKEN': token
-                                    },
-                                    body: formData
-                                });
+            const formData = new FormData();
+            formData.append('_token', token);
+            document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
+                formData.append('equipos[]', chk.value);
+            });
 
-                                if (!response.ok) throw new Error('Error al eliminar');
+            try {
+                const response = await fetch('{{ route("equipos.eliminarMultiple") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+                    body: formData
+                });
 
-                                // Remover filas eliminadas
-                                document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
-                                    chk.closest('tr').remove();
-                                });
+                if (!response.ok) throw new Error('Error al eliminar');
 
-                                toggleActionButtons();
+                // Remover filas eliminadas
+                document.querySelectorAll('.equipo-checkbox:checked').forEach(chk => {
+                    chk.closest('tr').remove();
+                });
 
-                                alertSuccess.textContent = "Equipos eliminados correctamente.";
-                                alertSuccess.classList.remove('d-none');
-                                setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
+                toggleActionButtons();
 
-                                confirmDeleteModal.hide();
-                            } catch (error) {
-                                alertError.textContent = "Error al eliminar los equipos.";
-                                alertError.classList.remove('d-none');
-                                setTimeout(() => alertError.classList.add('d-none'), 4000);
-                            } finally {
-                                confirmDeleteBtn.disabled = false;
-                            }
-                        });
+                alertSuccess.textContent = "Equipos eliminados correctamente.";
+                alertSuccess.classList.remove('d-none');
+                setTimeout(() => alertSuccess.classList.add('d-none'), 4000);
 
-                        // NUEVO: Manejar botón Ver trazabilidad
-                        const trazabilidadModal = new bootstrap.Modal(document.getElementById('trazabilidadModal'));
-                        const trazabilidadContent = document.getElementById('trazabilidadContent');
+                confirmDeleteModal.hide();
+            } catch (error) {
+                alertError.textContent = "Error al eliminar los equipos.";
+                alertError.classList.remove('d-none');
+                setTimeout(() => alertError.classList.add('d-none'), 4000);
+            } finally {
+                confirmDeleteBtn.disabled = false;
+            }
+        });
+    }
 
-                        document.querySelectorAll('.btn-ver-trazabilidad').forEach(button => {
-                            button.addEventListener('click', async () => {
-                                const equipoId = button.dataset.equipoId;
-                                trazabilidadContent.innerHTML = '<p class="text-center">Cargando...</p>';
-                                trazabilidadModal.show();
+    // === Ver trazabilidad ===
+    const trazabilidadModal = new bootstrap.Modal(document.getElementById('trazabilidadModal'));
+    const trazabilidadContent = document.getElementById('trazabilidadContent');
 
-                                try {
-                                    const response = await fetch(`/equipos/${equipoId}/trazabilidad`, {
-                                        headers: {
-                                            'Accept': 'application/json'
-                                        }
-                                    });
-                                    if (!response.ok) throw new Error('Error al obtener la trazabilidad');
+    document.querySelectorAll('.btn-ver-trazabilidad').forEach(button => {
+        button.addEventListener('click', async () => {
+            const equipoId = button.dataset.equipoId;
+            trazabilidadContent.innerHTML = '<p class="text-center">Cargando...</p>';
+            trazabilidadModal.show();
 
-                                    const movimientos = await response.json();
+            try {
+                const response = await fetch(`/equipos/${equipoId}/trazabilidad`, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!response.ok) throw new Error('Error al obtener la trazabilidad');
 
-                                    if (movimientos.length === 0) {
-                                        trazabilidadContent.innerHTML = '<p class="text-center">No hay movimientos registrados para este equipo.</p>';
-                                        return;
-                                    }
+                const movimientos = await response.json();
 
-                                    // Crear tabla con la trazabilidad
-                                    let html = `<table class="table table-striped table-bordered">
+                if (movimientos.length === 0) {
+                    trazabilidadContent.innerHTML = '<p class="text-center">No hay movimientos registrados para este equipo.</p>';
+                    return;
+                }
+
+                // Crear tabla con la trazabilidad
+                let html = `<table class="table table-striped table-bordered">
                     <thead class="table-dark">
                         <tr>
                             <th>Fecha</th>
@@ -432,26 +438,25 @@
                     </thead>
                     <tbody>`;
 
-                                    movimientos.forEach(mov => {
-                                        html += `<tr>
-                            <td>${mov.fecha}</td>
-                            <td>${mov.puesto_origen}</td>
-                            <td>${mov.puesto_destino}</td>
-                            <td>${mov.usuario}</td>
-                            <td>${mov.observaciones}</td>
-                        </tr>`;
-                                    });
+                movimientos.forEach(mov => {
+                    html += `<tr>
+                        <td>${mov.fecha}</td>
+                        <td>${mov.puesto_origen}</td>
+                        <td>${mov.puesto_destino}</td>
+                        <td>${mov.usuario}</td>
+                        <td>${mov.observaciones}</td>
+                    </tr>`;
+                });
 
+                html += `</tbody></table>`;
+                trazabilidadContent.innerHTML = html;
 
-                                    html += `</tbody></table>`;
-                                    trazabilidadContent.innerHTML = html;
-
-                                } catch (error) {
-                                    trazabilidadContent.innerHTML = `<p class="text-danger text-center">Error al cargar la trazabilidad.</p>`;
-                                }
-                            });
-                        });
-                    });
-                </script>
+            } catch (error) {
+                trazabilidadContent.innerHTML = `<p class="text-danger text-center">Error al cargar la trazabilidad.</p>`;
+            }
+        });
+    });
+});
+</script>
 
 </body>
