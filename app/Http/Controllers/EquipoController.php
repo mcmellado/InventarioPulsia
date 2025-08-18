@@ -11,6 +11,8 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Carbon\Carbon; 
 use App\Models\Proveedor;
+use Illuminate\Support\Facades\Auth;
+
 
 
 class EquipoController extends BaseController
@@ -19,8 +21,19 @@ class EquipoController extends BaseController
 
     public function index()
     {
+        $user = Auth::user();
+
         $equipos = Equipo::with('puestoActual')->get();
-        $equiposPorModelo = $equipos->groupBy('modelo');
+
+
+        if ($user->puesto !== 'admin') {
+            $equipos = $equipos->filter(function($equipo) use ($user) {
+                return redirect()->route('equipos.porPuesto', $user->puesto);    
+            });
+        }
+
+        $equipos = Equipo::with('puestoActual')->get();
+        $equiposPorModelo =  $equipos->groupBy('modelo');
         return view('equipos.index', compact('equiposPorModelo'));
     }
     

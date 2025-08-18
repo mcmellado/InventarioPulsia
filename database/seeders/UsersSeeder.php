@@ -18,11 +18,13 @@ class UsersSeeder extends Seeder
     public function run()
     {
         DB::table('users')->insert([
+        [
             'name' => 'Marilin',
             'user' => 'admin',
             'password' => Hash::make('hola'),
             'created_at' => now(),
             'updated_at' => now(),
+            'puesto' => 'admin'
         ],
         [
             'name' => 'Pablo',
@@ -30,7 +32,8 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('hola'),
             'created_at' => now(),
             'updated_at' => now(),
-            'puesto' => 'logistica'
+            'puesto' => 'logística'
+        ]
         ]);
     }
 }

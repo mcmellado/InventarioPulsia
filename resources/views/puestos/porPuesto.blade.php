@@ -28,10 +28,18 @@
 <div class="container mt-5">
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4 gap-3">
         <h1 class="text-primary mb-0">Equipos en puesto: {{ $puesto->nombre }}</h1>
+
+        @if(auth()->user()->is_admin)
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('equipos.crear') }}" class="btn btn-success">Añadir nuevos equipos</a>
             <a href="{{ route('equipos.index') }}" class="btn btn-secondary">Volver a la lista general</a>
         </div>
+        @endif
+
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+                <button type="submit" class="btn btn-danger">Cerrar sesión</button>
+          </form>
     </div>
 
     <p class="mb-3 fw-semibold">Total de equipos: {{ count($equipos) }}</p>

@@ -45,12 +45,11 @@ class UserController extends Controller
 
         if ($user->puesto !== 'admin') {
             $equipos = $equipos->filter(function($equipo) use ($user) {
-                return strtolower($equipo->puestoActual->nombre ?? '') === strtolower($user->puesto);     
+                return redirect()->route('puestos.porPuesto', $user->puesto);    
             });
         }
 
         $equipoPorModelo =  $equipos->groupBy('modelo');
-        
         return view('equipo.index', compact('equiposPorModelo'));
     }
 }

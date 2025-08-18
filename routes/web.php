@@ -8,6 +8,8 @@ use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\UserController;
 
+
+
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
@@ -20,7 +22,15 @@ Route::post('/login', function (Request $request) {
 
     if (Auth::attempt(['user' => $credentials['user'], 'password' => $credentials['password']])) {
         $request->session()->regenerate();
-        return redirect()->intended('/equipos');
+        
+
+        $user = Auth::user();
+        if (strtolower($user->puesto) === 'admin') {
+            return redirect()->route('equipos.index');
+        }
+
+        return redirect()->route('puestos.porPuesto', $user->puesto);
+
     }
 
     return back()->withErrors([
@@ -76,4 +86,5 @@ Route::get('/equipos/puesto/{puesto}', [EquipoController::class, 'porPuesto'])->
 Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 Route::patch('/equipos/{equipo}/toggle-stock', [EquipoController::class, 'toggleStock'])->name('equipos.toggleStock');
+Route::get('/puestos/{puesto}', [PuestoController::class, 'show'])->name('puestos.porPuesto');
 

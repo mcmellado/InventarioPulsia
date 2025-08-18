@@ -24,11 +24,6 @@
     </style>
 </head>
 
-    <div class="mb-3">
-        <span class="badge bg-info"> Puesto: {{ Auth::user()->puesto }} </span>
-
-    </div>
-
 <body class="bg-light">
 
 <div class="container mt-5">
@@ -48,7 +43,6 @@
         </form>
     </div>
 
-    {{-- Input buscador --}}
     <div class="mb-3">
         <input type="search" id="buscarModeloSerial" class="form-control" placeholder="Buscar por modelo o número de serie..." aria-label="Buscar por modelo o número de serie" autocomplete="off">
     </div>
