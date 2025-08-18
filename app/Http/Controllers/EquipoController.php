@@ -183,4 +183,12 @@ public function porPuesto($puestoId)
         ]);
     }
 
+
+    public function stock()
+{
+    $equipos = Equipo::where('stock', true)->get();
+
+    return view('equipos.stock', compact('equipos'));
+}
+
 }

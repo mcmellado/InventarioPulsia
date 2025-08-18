@@ -35,6 +35,8 @@
 
    
             <a href="{{ route('users.create') }}" class="btn btn-primary me-2">Crear nuevo usuario</a>
+
+            <a href="{{ route('equipos.stock') }}" class="btn btn-warning me-2">Stock</a>
         </div>
 
         <form method="POST" action="{{ route('logout') }}">

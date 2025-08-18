@@ -46,6 +46,7 @@ Route::middleware(['auth', 'puesto'])->group(function () {
 
     Route::get('/equipos/modelo/{modelo}', [EquipoController::class, 'porModelo'])->name('equipos.porModelo');
 
+
     Route::get('/equipos/crear-multiple', [EquipoController::class, 'crear'])->name('equipos.crearMultiple');
 
     Route::post('/equipos/guardar-multiple', [EquipoController::class, 'guardarMultiple'])->name('equipos.guardarMultiple');
@@ -86,3 +87,4 @@ Route::get('/equipos/puesto/{puesto}', [EquipoController::class, 'porPuesto'])->
 Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 Route::patch('/equipos/{equipo}/toggle-stock', [EquipoController::class, 'toggleStock'])->name('equipos.toggleStock');
+Route::get('/equipos/stock', [EquipoController::class, 'stock'])->name('equipos.stock');
