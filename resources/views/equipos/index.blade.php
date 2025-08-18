@@ -23,6 +23,12 @@
         }
     </style>
 </head>
+
+    <div class="mb-3">
+        <span class="badge bg-info"> Puesto: {{ Auth::user()->puesto }} </span>
+
+    </div>
+
 <body class="bg-light">
 
 <div class="container mt-5">

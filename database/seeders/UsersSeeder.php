@@ -23,6 +23,14 @@ class UsersSeeder extends Seeder
             'password' => Hash::make('hola'),
             'created_at' => now(),
             'updated_at' => now(),
+        ],
+        [
+            'name' => 'Pablo',
+            'user' => 'pablo',
+            'password' => Hash::make('hola'),
+            'created_at' => now(),
+            'updated_at' => now(),
+            'puesto' => 'logistica'
         ]);
     }
 }
