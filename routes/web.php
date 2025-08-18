@@ -8,8 +8,6 @@ use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\UserController;
 
-
-
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
@@ -20,18 +18,18 @@ Route::post('/login', function (Request $request) {
         'password' => ['required'],
     ]);
 
-    if (Auth::attempt(['user' => $credentials['user'], 'password' => $credentials['password']])) {
-        $request->session()->regenerate();
-        
+if (Auth::attempt(['user' => $credentials['user'], 'password' => $credentials['password']])) {
+    $request->session()->regenerate();
 
-        $user = Auth::user();
-        if (strtolower($user->puesto) === 'admin') {
-            return redirect()->route('equipos.index');
-        }
+    $user = Auth::user();
 
-        return redirect()->route('puestos.porPuesto', $user->puesto);
-
+    if ($user->puesto === 'admin') {
+        return redirect()->intended('/equipos');
     }
+
+    return redirect()->route('puestos.porPuesto', ['nombre' => $user->puesto]);
+}
+
 
     return back()->withErrors([
         'user' => 'Usuario o contraseña incorrectos.',
@@ -42,7 +40,7 @@ Route::get('/', function () {
     return redirect()->route('equipos.index');
 })->name('index');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'puesto'])->group(function () {
 
     Route::get('/equipos', [EquipoController::class, 'index'])->name('equipos.index');
 
@@ -54,7 +52,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/puestos', [PuestoController::class, 'index'])->name('puestos.index');
 
-    Route::get('/puestos/{nombre}', [PuestoController::class, 'porPuesto'])->name('puestos.porPuesto');
+    // 👇 Aquí aplicamos middleware
+    Route::get('/puestos/{nombre}', [PuestoController::class, 'porPuesto'])
+        ->middleware('puesto')
+        ->name('puestos.porPuesto');
 
     Route::post('/logout', function (Request $request) {
         Auth::logout();
@@ -62,7 +63,6 @@ Route::middleware('auth')->group(function () {
         $request->session()->regenerateToken();
         return redirect('/login');
     })->name('logout');
-
 });
 
 Route::get('/equipos/{id}/mover', [MovimientoController::class, 'crear'])->name('movimientos.crear');
@@ -75,7 +75,7 @@ Route::post('/movimientos/guardar-multiple', [MovimientoController::class, 'guar
 
 Route::post('/observaciones/guardar-multiple', [MovimientoController::class, 'guardarObservacionesMultiple'])->name('observaciones.guardarMultiple');
 
-Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.crear'); 
+Route::get('/equipos/crear', [EquipoController::class, 'crear'])->name('equipos.crear');
 Route::post('/equipos/guardar', [EquipoController::class, 'guardar'])->name('equipos.guardar');
 Route::delete('/equipos/lote/{modelo}', [EquipoController::class, 'eliminarPorModelo'])->name('equipos.eliminarPorModelo');
 Route::post('/equipos/eliminar-multiple', [EquipoController::class, 'eliminarMultiple'])->name('equipos.eliminarMultiple');
@@ -86,5 +86,3 @@ Route::get('/equipos/puesto/{puesto}', [EquipoController::class, 'porPuesto'])->
 Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 Route::patch('/equipos/{equipo}/toggle-stock', [EquipoController::class, 'toggleStock'])->name('equipos.toggleStock');
-Route::get('/puestos/{puesto}', [PuestoController::class, 'show'])->name('puestos.porPuesto');
-
