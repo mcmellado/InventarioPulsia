@@ -191,4 +191,10 @@ public function porPuesto($puestoId)
     return view('equipos.stock', compact('equipos'));
 }
 
+public function albaran()
+{
+    return view('albaran');
+}
+
+
 }

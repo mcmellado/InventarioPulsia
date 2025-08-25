@@ -7,6 +7,7 @@ use App\Http\Controllers\EquipoController;
 use App\Http\Controllers\PuestoController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AlbaranController;
 
 Route::get('/login', function () {
     return view('auth.login');
@@ -45,7 +46,6 @@ Route::middleware(['auth', 'puesto'])->group(function () {
     Route::get('/equipos', [EquipoController::class, 'index'])->name('equipos.index');
 
     Route::get('/equipos/modelo/{modelo}', [EquipoController::class, 'porModelo'])->name('equipos.porModelo');
-
 
     Route::get('/equipos/crear-multiple', [EquipoController::class, 'crear'])->name('equipos.crearMultiple');
 
@@ -88,3 +88,13 @@ Route::get('/users/create', [UserController::class, 'create'])->name('users.crea
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
 Route::patch('/equipos/{equipo}/toggle-stock', [EquipoController::class, 'toggleStock'])->name('equipos.toggleStock');
 Route::get('/equipos/stock', [EquipoController::class, 'stock'])->name('equipos.stock');
+Route::get('/albaran', [EquipoController::class, 'albaran'])->name('albaran.index');
+
+Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.show');
+
+Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.show');
+Route::post('/albaran/export', [AlbaranController::class, 'export'])->name('albaran.export');
+Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.index');
+
+
+
