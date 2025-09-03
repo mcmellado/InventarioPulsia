@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -140,7 +141,6 @@
             border: none;
             color: #000;
             font-weight: 600;
-            border-radius: 8px;
         }
 
         .btn-custom:hover {
@@ -148,7 +148,6 @@
             color: #000;
         }
 
-        /* Resultados búsqueda */
         #resultadosBusqueda {
             max-height: 300px;
             overflow-y: auto;
@@ -176,6 +175,60 @@
             text-align: center;
             font-weight: 500;
         }
+
+        .btn-pulsia-warning {
+            background: #FFD700;
+            color: #000;
+            border: none;
+        }
+
+        .btn-pulsia-warning:hover {
+            background: #e6c200;
+            color: #000;
+        }
+
+        .modelo-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: #fff;
+        }
+
+        .modelo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modelo-card h5 a {
+            color: #141414;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .modelo-card h5 a:hover {
+            color: #FFD700;
+        }
+
+        .modelo-card .specs {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+
+        .modelo-card .btn-ver {
+            background-color: #FFD700;
+            color: #000;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 0.5rem 0;
+            transition: background 0.2s;
+        }
+
+        .modelo-card .btn-ver:hover {
+            background-color: #e6c200;
+            color: #000;
+        }
     </style>
 </head>
 
@@ -185,35 +238,35 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="menu">
-            <div class="logo">
-                <img src="{{ asset('logo-pulsia.svg') }}" alt="Pulsia">
-            </div>
-            <p class="mensaje">Bienvenido, <i style="color:#FFD700">{{ auth()->user()->name }}_</i></p>
-            <hr>
+                <div class="logo">
+                    <img src="{{ asset('logo-pulsia.svg') }}" alt="Pulsia">
+                </div>
+                <p class="mensaje">Bienvenido, <i style="color:#FFD700">{{ auth()->user()->name }}_</i></p>
+                <hr>
 
 
-            <h2>Equipos por puesto</h2>
-            @php
-            $puestos = [
-            "admisión",
-            "auditoría",
-            "desmontaje",
-            "reparación",
-            "pintura",
-            "teclados",
-            "montaje",
-            "calidad",
-            "logística",
-            "venta"
-            ];
+                <h2>Equipos por puesto</h2>
+                @php
+                $puestos = [
+                "admisión",
+                "auditoría",
+                "desmontaje",
+                "reparación",
+                "pintura",
+                "teclados",
+                "montaje",
+                "calidad",
+                "logística",
+                "venta"
+                ];
 
-            @endphp
+                @endphp
 
-            @foreach($puestos as $puesto)
-            <a href="{{ route('puestos.porPuesto', $puesto) }}">
-                {{ ucfirst($puesto) }}
-            </a>
-            @endforeach
+                @foreach($puestos as $puesto)
+                <a href="{{ route('puestos.porPuesto', $puesto) }}">
+                    {{ ucfirst($puesto) }}
+                </a>
+                @endforeach
 
             </div>
 
@@ -226,11 +279,12 @@
         <!-- Contenido principal -->
         <div class="content">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>📋 Lotes de equipos</h1>
-                <a href="{{ route('equipos.crear') }}" class="btn btn-custom">Añadir equipos</a>
-                <a href="{{ route('albaran.index') }}" class="btn btn-info me-2">Albarán</a>
-                <a href="{{ route('equipos.stock') }}" class="btn btn-warning me-2">Stock</a>
-
+                <h1>Lotes de equipos</h1>
+                <div>
+                    <a href="{{ route('equipos.crear') }}" class="btn btn-custom">Añadir equipos</a>
+                    <a href="{{ route('albaran.index') }}" class="btn btn-success">Albarán</a>
+                    <a href="{{ route('equipos.stock') }}" class="btn btn-primary">Stock</a>
+                </div>
             </div>
 
             {{-- Input buscador --}}
@@ -254,52 +308,76 @@
             </script>
             @endif
 
-            {{-- Listado de equipos por modelo --}}
-            <div id="listadoModelos">
+            <div id="listadoModelos" class="row g-4">
                 @forelse($equiposPorModelo as $modelo => $equipos)
-                <div class="card mb-3 shadow-sm modelo-card" data-modelo="{{ strtolower($modelo) }}">
-                    <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-                        <h5 class="mb-0">
-                            <a href="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}" class="text-decoration-none text-dark">
-                                {{ $modelo }}
-                            </a>
-                        </h5>
+                <div class="col-12 col-md-6 col-lg-4 modelo-col">
+                    <div class="card shadow-sm modelo-card h-100" data-modelo="{{ strtolower($modelo) }}">
+                        <!-- Icono esquina superior izquierda -->
+                        @php
+                        // Tomamos la primera marca de la lista de equipos de ese modelo
+                        $marca = $equipos[0]->marca ?? null;
+                        $configuracion = $equipos[0]->configuracion ?? '';
+                        @endphp
+                        @if($marca)
+                        <div class="card-icon p-2">
+                            <img src="{{ asset($marca) }}" alt="{{ $modelo }}" style="width:28px; height:28px;">
+                        </div>
+                        @endif
 
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}" class="btn btn-outline-primary btn-sm">
-                                Ver ({{ count($equipos) }})
-                            </a>
-                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ Str::slug($modelo) }}">
+                        <!-- Botón X esquina superior derecha -->
+                        <div class="position-absolute top-0 end-0 p-2">
+                            <button class="btn btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEliminar{{ Str::slug($modelo) }}">
                                 ❌
                             </button>
                         </div>
 
-                        {{-- Lista oculta de serialnumbers para búsqueda --}}
-                        <div class="serialnumbers-list">
-                            @foreach($equipos as $equipo)
-                            <span class="serialnumber"
-                                data-serial="{{ strtolower($equipo->numero_serie) }}"
-                                data-modelo="{{ strtolower($modelo) }}"
-                                data-puesto="{{ strtolower($equipo->puestoActual->nombre ?? '') }}"
-                                data-url="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}">
-                                {{ $equipo->numero_serie }}
-                            </span>
-                            @endforeach
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="mb-2">
+                                    <a href="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}"
+                                        class="text-decoration-none text-dark">
+                                        {{ $modelo }}
+                                    </a>
+                                </h5>
+                                <!-- Configuración del equipo -->
+                                <i class="specs">{{ $configuracion}}</i>
+                            </div>
+                            <div class="d-flex flex-column mt-3 gap-2">
+                                <a href="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}"
+                                    class="btn btn-ver w-100">
+                                    Ver ({{ count($equipos) }})
+                                </a>
+                            </div>
+                            
+                            <!-- Lista oculta de serialnumbers -->
+                            <div class="serialnumbers-list d-none">
+                                @foreach($equipos as $equipo)
+                                <span class="serialnumber"
+                                    data-serial="{{ strtolower($equipo->numero_serie) }}"
+                                    data-modelo="{{ strtolower($modelo) }}"
+                                    data-puesto="{{ strtolower($equipo->puestoActual->nombre ?? '') }}"
+                                    data-url="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}">
+                                    {{ $equipo->numero_serie }}
+                                </span>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Modal eliminación --}}
-                <div class="modal fade" id="modalEliminar{{ Str::slug($modelo) }}" tabindex="-1" aria-labelledby="modalLabel{{ Str::slug($modelo) }}" aria-hidden="true">
+                <!-- Modal eliminación -->
+                <div class="modal fade" id="modalEliminar{{ Str::slug($modelo) }}" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title" id="modalLabel{{ Str::slug($modelo) }}">Confirmar eliminación</h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                <h5 class="modal-title">Confirmar eliminación</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                                ¿Estás seguro de que deseas eliminar <strong>todos los equipos</strong> del modelo <strong>{{ $modelo }}</strong>?
-                                Esta acción no se puede deshacer.
+                                ¿Seguro que deseas eliminar <strong>todos los equipos</strong> del modelo
+                                <strong>{{ $modelo }}</strong>? Esta acción no se puede deshacer.
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -316,78 +394,90 @@
                 <div class="alert alert-warning text-center mt-4">No hay equipos registrados.</div>
                 @endforelse
             </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        const inputBuscar = document.getElementById('buscarModeloSerial');
-        const resultadosDiv = document.getElementById('resultadosBusqueda');
-        const listadoModelos = document.getElementById('listadoModelos');
+            <script>
+                const inputBuscar = document.getElementById('buscarModeloSerial');
+                const resultadosDiv = document.getElementById('resultadosBusqueda');
+                const listadoModelos = document.getElementById('listadoModelos');
+                const modeloCols = Array.from(document.querySelectorAll('.modelo-col'));
 
-        inputBuscar.addEventListener('input', function() {
-            const filtro = this.value.trim().toLowerCase();
+                function mostrarGrid() {
+                    listadoModelos.classList.remove('d-none');
+                    listadoModelos.style.display = ''; // por si antes quedó forzado
+                    resultadosDiv.classList.add('d-none');
+                }
 
-            if (filtro === '') {
-                listadoModelos.style.display = 'block';
-                resultadosDiv.style.display = 'none';
-                resultadosDiv.innerHTML = '';
-                const modelos = Array.from(document.querySelectorAll('.modelo-card'));
-                modelos.forEach(card => card.style.display = 'block');
-                return;
-            }
+                function mostrarResultados() {
+                    resultadosDiv.classList.remove('d-none');
+                    listadoModelos.classList.add('d-none');
+                }
 
-            listadoModelos.style.display = 'none';
+                function resetCols() {
+                    modeloCols.forEach(col => col.classList.remove('d-none'));
+                }
 
-            const modelos = Array.from(document.querySelectorAll('.modelo-card'));
-            const modelosFiltrados = modelos.filter(card => card.getAttribute('data-modelo').includes(filtro));
+                inputBuscar.addEventListener('input', function() {
+                    const filtro = this.value.trim().toLowerCase();
 
-            let resultadosEquipos = [];
-            modelos.forEach(card => {
-                const serials = card.querySelectorAll('.serialnumber');
-                serials.forEach(span => {
-                    const serialText = span.getAttribute('data-serial');
-                    if (serialText.includes(filtro)) {
-                        resultadosEquipos.push({
-                            serial: span.textContent,
-                            modelo: span.getAttribute('data-modelo'),
-                            puesto: span.getAttribute('data-puesto'),
-                            url: span.getAttribute('data-url')
+                    if (filtro === '') {
+                        mostrarGrid();
+                        resultadosDiv.innerHTML = '';
+                        resetCols();
+                        return;
+                    }
+
+                    // filtrar por modelo
+                    const colsFiltradas = modeloCols.filter(col => {
+                        const card = col.querySelector('.modelo-card');
+                        return card.getAttribute('data-modelo').includes(filtro);
+                    });
+
+                    // buscar por nº de serie
+                    let resultadosEquipos = [];
+                    modeloCols.forEach(col => {
+                        col.querySelectorAll('.serialnumber').forEach(span => {
+                            const serialText = span.dataset.serial;
+                            if (serialText.includes(filtro)) {
+                                resultadosEquipos.push({
+                                    serial: span.textContent,
+                                    modelo: span.dataset.modelo,
+                                    puesto: span.dataset.puesto,
+                                    url: span.dataset.url
+                                });
+                            }
                         });
+                    });
+
+                    if (colsFiltradas.length > 0 && resultadosEquipos.length === 0) {
+                        // Mostrar el grid con solo las columnas que coinciden
+                        mostrarGrid();
+                        modeloCols.forEach(col => col.classList.toggle('d-none', !colsFiltradas.includes(col)));
+                        resultadosDiv.innerHTML = '';
+                    } else {
+                        // Mostrar lista de resultados
+                        mostrarResultados();
+                        resultadosDiv.innerHTML = '';
+
+                        if (resultadosEquipos.length === 0) {
+                            resultadosDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados.</div>';
+                        } else {
+                            resultadosEquipos.forEach(equipo => {
+                                const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
+                                const puestoCapitalizado = equipo.puesto ? (equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1)) : 'N/A';
+                                const item = document.createElement('a');
+                                item.href = equipo.url;
+                                item.className = 'list-group-item list-group-item-action resultado-item';
+                                item.innerHTML = `<strong>Equipo:</strong> ${equipo.serial} <br>
+                            <small>Lote: ${modeloCapitalizado} | Puesto: ${puestoCapitalizado}</small>`;
+                                resultadosDiv.appendChild(item);
+                            });
+                        }
                     }
                 });
-            });
+            </script>
 
-            if (modelosFiltrados.length > 0 && resultadosEquipos.length === 0) {
-                listadoModelos.style.display = 'block';
-                resultadosDiv.style.display = 'none';
-                modelos.forEach(card => {
-                    card.style.display = modelosFiltrados.includes(card) ? 'block' : 'none';
-                });
-                resultadosDiv.innerHTML = '';
-            } else {
-                resultadosDiv.style.display = 'block';
-                resultadosDiv.innerHTML = '';
-
-                if (resultadosEquipos.length === 0) {
-                    resultadosDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados.</div>';
-                } else {
-                    resultadosEquipos.forEach(equipo => {
-                        const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
-                        const puestoCapitalizado = equipo.puesto ? equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1) : 'N/A';
-
-                        const item = document.createElement('a');
-                        item.href = equipo.url;
-                        item.className = 'list-group-item list-group-item-action resultado-item';
-                        item.innerHTML = `<strong>Equipo:</strong> ${equipo.serial} <br> <small>Lote: ${modeloCapitalizado} | Puesto: ${puestoCapitalizado}</small>`;
-                        resultadosDiv.appendChild(item);
-                    });
-                }
-                modelos.forEach(card => card.style.display = 'none');
-            }
-        });
-    </script>
 </body>
 
 </html>

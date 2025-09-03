@@ -11,7 +11,9 @@ return new class extends Migration
         Schema::create('equipos', function (Blueprint $table) {
             $table->id();
             $table->string('numero_serie')->unique();
+            $table->string('marca')->nullable();
             $table->string('modelo');
+            $table->string('configuracion')->nullable();
 
             $table->foreignId('puesto_actual_id')->nullable()->constrained('puestos')->onDelete('set null');
             $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('set null');

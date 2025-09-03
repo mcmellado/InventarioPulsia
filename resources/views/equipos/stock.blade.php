@@ -258,7 +258,7 @@
                             <table class="table table-bordered table-hover table-striped align-middle">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>NÃºmero de serie</th>
+                                        <th>Número de serie</th>
                                         <th>Puesto actual</th>
                                         <th>Proveedor</th>
                                         <th>Fecha de ingreso</th>

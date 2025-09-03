@@ -67,7 +67,7 @@ class EquipoController extends BaseController
 
     $modelo = $request->modelo_select === 'otro' ? $request->modelo : $request->modelo_select;
 
-    $puestoAdmision = Puesto::where('nombre', 'Admisión')->first();
+    $puestoAdmision = Puesto::where('nombre', 'admisión')->first();
 
     if (!$puestoAdmision) {
         return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
