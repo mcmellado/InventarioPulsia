@@ -11,6 +11,19 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
+
+            .badge-grade-A { background:#28a745; color:#fff; }
+            .badge-grade-B { background:#007bff; color:#fff; } /* azul para la B */
+            .badge-grade-C { background:#dc3545; color:#fff; }
+            .badge-grade-N/A { background:#6c757d; color:#fff; } /* opcional para valores nulos */
+            .badge-grade {
+                display: inline-block;
+                padding: 0.2em 0.5em;
+                font-size: 0.75rem;
+                font-weight: 600;
+                border-radius: 0.25rem;
+            }
+
         body {
             margin: 0;
             padding: 0;
@@ -354,13 +367,16 @@
                             <!-- Lista oculta de serialnumbers -->
                             <div class="serialnumbers-list d-none">
                                 @foreach($equipos as $equipo)
-                                <span class="serialnumber"
-                                    data-serial="{{ strtolower($equipo->numero_serie) }}"
-                                    data-modelo="{{ strtolower($modelo) }}"
-                                    data-puesto="{{ strtolower($equipo->puestoActual->nombre ?? '') }}"
-                                    data-url="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}">
-                                    {{ $equipo->numero_serie }}
-                                </span>
+                                    <span class="serialnumber"
+                                        data-serial="{{ strtolower($equipo->numero_serie) }}" 
+                                        data-modelo="{{ strtolower($modelo) }}"
+                                        data-puesto="{{ strtolower($equipo->puestoActual->nombre ?? '') }}"
+                                        data-grade="{{ strtolower($equipo->grado ?? 'n/a') }}"
+                                        data-url="{{ route('equipos.porModelo', ['modelo' => $modelo]) }}">
+                                        {{ $equipo->numero_serie }}
+                                        <span class="badge badge-grade badge-grade-{{ $equipo->grado ?? 'N/A' }}"></span>
+                                    </span>
+
                                 @endforeach
                             </div>
                         </div>
@@ -437,18 +453,20 @@
                     // buscar por nº de serie
                     let resultadosEquipos = [];
                     modeloCols.forEach(col => {
-                        col.querySelectorAll('.serialnumber').forEach(span => {
-                            const serialText = span.dataset.serial;
-                            if (serialText.includes(filtro)) {
-                                resultadosEquipos.push({
-                                    serial: span.textContent,
-                                    modelo: span.dataset.modelo,
-                                    puesto: span.dataset.puesto,
-                                    url: span.dataset.url
-                                });
-                            }
-                        });
+                    col.querySelectorAll('.serialnumber').forEach(span => {
+                        const serialText = span.dataset.serial;
+                        if (serialText.includes(filtro)) {
+                            resultadosEquipos.push({
+                                serial: span.textContent.trim(),
+                                modelo: span.dataset.modelo,
+                                puesto: span.dataset.puesto,
+                                grade: span.dataset.grade || 'N/A', 
+                                url: span.dataset.url
+                            });
+                        }
                     });
+                });
+
 
                     if (colsFiltradas.length > 0 && resultadosEquipos.length === 0) {
                         // Mostrar el grid con solo las columnas que coinciden
@@ -464,15 +482,20 @@
                             resultadosDiv.innerHTML = '<div class="p-2 text-muted">No se encontraron resultados.</div>';
                         } else {
                             resultadosEquipos.forEach(equipo => {
-                                const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
-                                const puestoCapitalizado = equipo.puesto ? (equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1)) : 'N/A';
-                                const item = document.createElement('a');
-                                item.href = equipo.url;
-                                item.className = 'list-group-item list-group-item-action resultado-item';
-                                item.innerHTML = `<strong>Equipo:</strong> ${equipo.serial} <br>
-                            <small>Lote: ${modeloCapitalizado} | Puesto: ${puestoCapitalizado}</small>`;
-                                resultadosDiv.appendChild(item);
-                            });
+                            const modeloCapitalizado = equipo.modelo.charAt(0).toUpperCase() + equipo.modelo.slice(1);
+                            const puestoCapitalizado = equipo.puesto ? (equipo.puesto.charAt(0).toUpperCase() + equipo.puesto.slice(1)) : 'N/A';
+                            const gradeUpper = (equipo.grade || 'N/A').toUpperCase();
+
+                            const item = document.createElement('a');
+                            item.href = equipo.url;
+                            item.className = 'list-group-item list-group-item-action resultado-item';
+                            item.innerHTML = `<strong>Equipo:</strong> ${equipo.serial} 
+                                            <span class="badge badge-grade badge-grade-${gradeUpper}">${gradeUpper}</span>
+                                            <br>
+                                            <small>Lote: ${modeloCapitalizado} | Puesto: ${puestoCapitalizado}</small>`;
+                            resultadosDiv.appendChild(item);
+                        });
+
                         }
                     }
                 });
