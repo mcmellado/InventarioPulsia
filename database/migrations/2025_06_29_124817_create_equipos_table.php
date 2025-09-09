@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('set null');
             $table->foreignId('comprador_id')->nullable()->constrained('compradores')->onDelete('set null');
             $table->boolean('stock')->default(false);
+            $table->enum('grado', ['A', 'B', 'C'])->default('A'); 
 
             $table->date('fecha_ingreso')->nullable();
             $table->timestamps();

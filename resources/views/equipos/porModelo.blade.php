@@ -5,7 +5,24 @@
     <title>Equipos modelo {{ $modelo }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-         <style>
+          <style>
+
+            .table th,
+            .table td {
+                vertical-align: middle;
+                text-align: center;  
+                font-size: 0.9rem;
+            }
+
+            .td-observacion {
+                text-align: center;
+            }
+            .td-observacion input {
+                margin: 0 auto; /* centra el input */
+                display: block;
+            }
+
+ 
         .tick {
             font-size: 1.3em;
             color: green;
@@ -258,7 +275,7 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover table-striped align-middle">
-                    <thead class="table-dark">
+                    <thead class="table-dark text-center">
                         <tr>
                             <th scope="col"><input type="checkbox" id="selectAll" aria-label="Seleccionar todos" /></th>
                             <th scope="col">Número de serie</th>
@@ -266,8 +283,9 @@
                             <th scope="col">Proveedor</th>
                             <th scope="col">Fecha de ingreso</th>
                             <th scope="col">Listo para venta</th>
-                            <th scope="col">Observación</   th>
+                            <th scope="col">Observación</th>
                             <th scope="col">Trazabilidad</th>
+                            <th scope="col">Grado</th>
                             <th scope="col">Calidad</th> 
                         </tr>
                     </thead>
@@ -287,19 +305,27 @@
                                     {{ $equipo->stock ? '✔️' : '❌' }}
                                 </button>
                             </td>
-                            <td class="d-flex align-items-center gap-2">
+                            <td class="td-observacion">
                                 <input type="text"
-                                       name="observaciones[{{ $equipo->id }}]"
-                                       class="form-control form-control-sm obs-input"
-                                       placeholder="Escribe una observación"
-                                       value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
-                                       data-equipo-id="{{ $equipo->id }}" />
+                                    name="observaciones[{{ $equipo->id }}]"
+                                    class="form-control form-control-sm obs-input"
+                                    placeholder="Escribe una observación"
+                                    value="{{ old('observaciones.' . $equipo->id, $equipo->ultimoMovimiento->observaciones ?? '') }}"
+                                    data-equipo-id="{{ $equipo->id }}" />
                                 <span class="tick" title="Guardado" aria-hidden="true">✔️</span>
                             </td>
+
                             <td>
                                 <button type="button" class="btn btn-info btn-sm btn-ver-trazabilidad" data-equipo-id="{{ $equipo->id }}">
                                     Historial
                                 </button>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm grado-select" data-id="{{ $equipo->id }}">
+                                    <option value="A" {{ $equipo->grado === 'A' ? 'selected' : '' }}>A</option>
+                                    <option value="B" {{ $equipo->grado === 'B' ? 'selected' : '' }}>B</option>
+                                    <option value="C" {{ $equipo->grado === 'C' ? 'selected' : '' }}>C</option>
+                                </select>
                             </td>
                             <td>
                                 <button type="button" class="btn btn-primary btn-sm btn-ver-calidad" data-equipo-id="{{ $equipo->id }}">
@@ -656,6 +682,39 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    document.addEventListener('DOMContentLoaded', () => {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    document.querySelectorAll('.grado-select').forEach(select => {
+        select.addEventListener('change', async () => {
+            const id = select.dataset.id;
+            const grado = select.value;
+
+            try {
+                const response = await fetch(`/equipos/${id}/grado`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ grado })
+                });
+
+                if (!response.ok) throw new Error("Error al actualizar el grado");
+
+                const data = await response.json();
+                console.log("Grado actualizado:", data.grado);
+
+            } catch (err) {
+                alert("No se pudo actualizar el grado");
+                select.value = select.getAttribute("data-prev") || "A";
+            }
+        });
+    });
+});
+
 
 </script>
 

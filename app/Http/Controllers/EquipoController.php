@@ -71,7 +71,7 @@ class EquipoController extends BaseController
 
     if (!$puestoAdmision) {
         return redirect()->back()->withErrors(['puesto_actual_id' => 'No se encontró el puesto Admisión.']);
-    }
+    } 
 
     $fechaIngreso = $request->fecha_ingreso ?: Carbon::today()->toDateString();
     $numerosSerie = preg_split('/\r\n|\r|\n/', trim($request->numeros_serie));
@@ -195,6 +195,22 @@ public function albaran()
 {
     return view('albaran');
 }
+
+public function actualizarGrado(Request $request, Equipo $equipo)
+{
+    $request->validate([
+        'grado' => 'required|in:A,B,C',
+    ]);
+
+    $equipo->grado = $request->grado;
+    $equipo->save();
+
+    return response()->json([
+        'success' => true,
+        'grado' => $equipo->grado,
+    ]);
+}
+
 
 
 }

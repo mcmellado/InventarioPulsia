@@ -95,6 +95,8 @@ Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.show')
 Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.show');
 Route::post('/albaran/export', [AlbaranController::class, 'export'])->name('albaran.export');
 Route::get('/albaran', [AlbaranController::class, 'show'])->name('albaran.index');
+Route::patch('/equipos/{equipo}/grado', [EquipoController::class, 'actualizarGrado'])->name('equipos.actualizarGrado');
+
 
 
 
